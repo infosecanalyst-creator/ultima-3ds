@@ -1,0 +1,390 @@
+diff --git a/backends/platform/3ds/module.mk b/backends/platform/3ds/module.mk
+index 8662cac5..ac012ccd 100644
+--- a/backends/platform/3ds/module.mk
++++ b/backends/platform/3ds/module.mk
+@@ -1,6 +1,7 @@
+ MODULE := backends/platform/3ds
+ 
+ MODULE_OBJS := \
++	stereo3ds.o \
+ 	main.o \
+ 	allocHeapsOverride.o \
+ 	shader.shbin.o \
+diff --git a/backends/platform/3ds/osystem-graphics.cpp b/backends/platform/3ds/osystem-graphics.cpp
+index ab1c8ab1..01afcc1a 100644
+--- a/backends/platform/3ds/osystem-graphics.cpp
++++ b/backends/platform/3ds/osystem-graphics.cpp
+@@ -22,6 +22,7 @@
+  */
+ 
+ #include "backends/platform/3ds/osystem.h"
++#include "backends/platform/3ds/stereo3ds.h"
+ #include "backends/platform/3ds/shader_shbin.h"
+ #include "common/rect.h"
+ #include "graphics/blit.h"
+@@ -106,6 +107,8 @@ void OSystem_3DS::init3DSGraphics() {
+ 	C3D_DepthTest(false, GPU_GEQUAL, GPU_WRITE_ALL);
+ 	C3D_CullFace(GPU_CULL_NONE);
+ 
++	stereo3dsInit();
++
+ 	// _overlay initialized in updateSize()
+ }
+ 
+@@ -116,6 +119,7 @@ void OSystem_3DS::destroy3DSGraphics() {
+ 	shaderProgramFree(&_program);
+ 	DVLB_Free(_dvlb);
+ 
++	stereo3dsShutdown();
+ 	C3D_RenderTargetDelete(_renderTargetTop);
+ 	C3D_RenderTargetDelete(_renderTargetBottom);
+ 
+@@ -452,6 +456,7 @@ void OSystem_3DS::updateScreen() {
+ 
+ 	C3D_FrameBegin(0);
+ 		_gameTopTexture.transfer();
++		stereo3dsPrepare(_gameTopTexture);
+ 		if (_overlayVisible) {
+ 			_overlay.transfer();
+ 		}
+@@ -463,14 +468,17 @@ void OSystem_3DS::updateScreen() {
+ 	C3D_FrameEnd(0);
+ 
+ 	C3D_FrameBegin(0);
+-		// Render top screen
+-		C3D_RenderTargetClear(_renderTargetTop, C3D_CLEAR_ALL, 0x00000000, 0);
+-		C3D_FrameDrawOn(_renderTargetTop);
++		// Render top screen (once per eye when the 3D slider is up)
++		const int stereoEyes = stereo3dsEyes();
++		for (int eyeIdx = 0; eyeIdx < stereoEyes; ++eyeIdx) {
++		const int eye = (eyeIdx == 0) ? -1 : 1;
++		C3D_RenderTarget *topTarget = (eyeIdx == 0) ? _renderTargetTop : stereo3dsTarget();
++		C3D_RenderTargetClear(topTarget, C3D_CLEAR_ALL, 0x00000000, 0);
++		C3D_FrameDrawOn(topTarget);
+ 		if (_screen == kScreenTop || _screen == kScreenBoth) {
+ 			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionTop);
+-			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _gameTopTexture.getMatrix());
+ 			_gameTopTexture.setFilteringMode(_magnifyMode != MODE_MAGON && _filteringEnabled);
+-			_gameTopTexture.render();
++			stereo3dsRenderGame(eye, _gameTopTexture, _modelviewLocation);
+ 			if (_overlayVisible && _screen == kScreenTop) {
+ 				C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, _overlay.getMatrix());
+ 				_overlay.render();
+@@ -491,6 +499,7 @@ void OSystem_3DS::updateScreen() {
+ 				_cursorTexture.render();
+ 			}
+ 		}
++		} // stereo eyes
+ 
+ 		// Render bottom screen
+ 		C3D_RenderTargetClear(_renderTargetBottom, C3D_CLEAR_ALL, 0x00000000, 0);
+diff --git a/common/module.mk b/common/module.mk
+index 3a1e22f9..bc34a14f 100644
+--- a/common/module.mk
++++ b/common/module.mk
+@@ -1,6 +1,7 @@
+ MODULE := common
+ 
+ MODULE_OBJS := \
++	stereo3ds.o \
+ 	archive.o \
+ 	base64.o \
+ 	btea.o \
+diff --git a/engines/ultima/nuvie/gui/widgets/map_window.cpp b/engines/ultima/nuvie/gui/widgets/map_window.cpp
+index dcf84baa..7aaef80b 100644
+--- a/engines/ultima/nuvie/gui/widgets/map_window.cpp
++++ b/engines/ultima/nuvie/gui/widgets/map_window.cpp
+@@ -793,6 +793,7 @@ void MapWindow::updateBlacking() {
+ }
+ 
+ void MapWindow::Display(bool full_redraw) {
++	Stereo3DS::ScopedLevel _stereoGround(screen->depth, Stereo3DS::kGround); // ultima-3ds
+ 	if (lighting_update_required) {
+ 		createLightOverlay();
+ 	}
+@@ -842,6 +843,7 @@ void MapWindow::Display(bool full_redraw) {
+ 	}
+ 
+ 	if (show_cursor) {
++		Stereo3DS::ScopedLevel _stereoCur(screen->depth, Stereo3DS::kFront); // ultima-3ds
+ 		screen->blit(area.left + cursor_x * 16, area.top + cursor_y * 16, (byte *)cursor_tile->data, 8, 16, 16, 16, true, &clip_rect);
+ 	}
+ 
+@@ -915,6 +917,7 @@ void MapWindow::drawActors() {
+ 
+ //FIX need a function for multi-tile actors.
+ inline void MapWindow::drawActor(const Actor *actor) {
++	Stereo3DS::ScopedLevel _stereoActor(screen->depth, Stereo3DS::kActor); // ultima-3ds
+ 	if (actor->is_visible() /* && actor->obj_n != 0*/
+ 	        && (!(actor->obj_flags & OBJ_STATUS_INVISIBLE) || actor->is_in_party() || actor == actor_manager->get_player())
+ 	        && actor->get_corpser_flag() == false) {
+@@ -961,6 +964,7 @@ inline void MapWindow::drawActor(const Actor *actor) {
+ }
+ 
+ void MapWindow::drawObjs() {
++	Stereo3DS::ScopedLevel _stereoObj(screen->depth, Stereo3DS::kObject); // ultima-3ds
+ //FIXME: we need to make this more efficient.
+ 
+ 	drawObjSuperBlock(true, false); //draw force lower objects
+@@ -1186,6 +1190,7 @@ void MapWindow::drawBorder() {
+ 
+ //FIXME this won't work for wrapped maps like MD.
+ void MapWindow::drawRoofs() {
++	Stereo3DS::ScopedLevel _stereoRoof(screen->depth, Stereo3DS::kFront); // ultima-3ds
+ 	if (cur_y < 1 || cur_y > 760) // FIXME We need to handle this properly
+ 		return;
+ 	if (roof_display == ROOF_DISPLAY_NORMAL && map->has_roof(WRAPPED_COORD(cur_x + (win_width - 1 - map_center_xoff) / 2, cur_level), cur_y + (win_height - 1) / 2, cur_level)) //Don't draw roof tiles if player is underneath.
+diff --git a/engines/ultima/nuvie/screen/screen.cpp b/engines/ultima/nuvie/screen/screen.cpp
+index 349f1b00..a3d271c5 100644
+--- a/engines/ultima/nuvie/screen/screen.cpp
++++ b/engines/ultima/nuvie/screen/screen.cpp
+@@ -143,6 +143,7 @@ bool Screen::rotate_palette(uint8 pos, uint8 length) {
+ }
+ 
+ bool Screen::clear(sint16 x, sint16 y, sint16 w, sint16 h, Common::Rect *clip_rect) {
++	depth.stampRect(x, y, w, h); // ultima-3ds (clear = blacked-out ground)
+ 	uint8 *pixels = (uint8 *)_renderSurface->pixels;
+ 
+ 	if (x >= width || y >= height)
+@@ -205,6 +206,7 @@ bool Screen::clear(sint16 x, sint16 y, sint16 w, sint16 h, Common::Rect *clip_re
+ }
+ 
+ bool Screen::fill(uint8 colour_num, uint16 x, uint16 y, sint16 w, sint16 h) {
++	depth.stampRect(x, y, w, h); // ultima-3ds
+ 	if (x >= _renderSurface->w || y >= _renderSurface->h) {
+ 		return true;
+ 	}
+@@ -438,6 +440,24 @@ bool Screen::blit(int32 dest_x, int32 dest_y, const byte *src_buf, uint16 src_bp
+ 		src_buf += src_y * src_pitch + src_x;
+ 	}
+ 
++	// ultima-3ds: tag the pixels this blit touches with the current depth level
++	if (depth.valid()) {
++		if (!trans) {
++			depth.stampRect(dest_x, dest_y, src_w, src_h);
++		} else {
++			const byte *sp = src_buf;
++			for (int i = 0; i < src_h; i++, sp += src_pitch) {
++				const int yy = dest_y + i;
++				if (yy < 0 || yy >= depth.height()) continue;
++				for (int j = 0; j < src_w; j++) {
++					const int xx = dest_x + j;
++					if (sp[j] != 0xff && xx >= 0 && xx < depth.width())
++						depth.stamp(xx, yy);
++				}
++			}
++		}
++	}
++
+ 	if (_renderSurface->bits_per_pixel == 16) {
+ 		if (opacity < 255)
+ 			return blit16WithOpacity(dest_x, dest_y, src_buf, src_bpp, src_w, src_h, src_pitch, trans, opacity);
+@@ -1058,6 +1078,7 @@ Graphics::ManagedSurface *Screen::create_sdl_surface_from(const byte *src_buf, u
+ }
+ 
+ void Screen::update() {
++	depth.push(); // ultima-3ds
+ 	_rawSurface->markAllDirty();
+ 	_rawSurface->update();
+ }
+@@ -1082,6 +1103,7 @@ void Screen::update(int x, int y, uint16 w, uint16 h) {
+ }
+ 
+ void Screen::performUpdate() {
++	depth.push(); // ultima-3ds (partial)
+ 	_rawSurface->update();
+ }
+ 
+@@ -1091,6 +1113,9 @@ void Screen::set_screen_mode() {
+ 	_rawSurface = new Graphics::Screen(width, height, SCREEN_FORMAT);
+ 
+ 	_renderSurface = CreateRenderSurface(_rawSurface);
++
++	depth.create(width, height);
++	depth.setLevel(Stereo3DS::kFront); // GUI by default; MapWindow lowers it
+ }
+ 
+ bool Screen::is_fullscreen() const {
+diff --git a/engines/ultima/nuvie/screen/screen.h b/engines/ultima/nuvie/screen/screen.h
+index 465a6937..bec5246b 100644
+--- a/engines/ultima/nuvie/screen/screen.h
++++ b/engines/ultima/nuvie/screen/screen.h
+@@ -22,6 +22,7 @@
+ #ifndef NUVIE_SCREEN_SCREEN_H
+ #define NUVIE_SCREEN_SCREEN_H
+ 
++#include "common/stereo3ds.h"
+ #include "common/str.h"
+ #include "ultima/nuvie/core/game.h"
+ #include "ultima/nuvie/screen/surface.h"
+@@ -39,6 +40,9 @@ enum LightingStyle {
+ };
+ 
+ class Screen {
++public:
++	// ultima-3ds: per-pixel depth for stereoscopic 3D (see common/stereo3ds.h)
++	Stereo3DS::DepthPlane depth;
+ private:
+ 	const Configuration *config;
+ 	Graphics::Screen *_rawSurface;
+diff --git a/engines/ultima/ultima4/gfx/image.cpp b/engines/ultima/ultima4/gfx/image.cpp
+index 5b61fc3b..06d186f7 100644
+--- a/engines/ultima/ultima4/gfx/image.cpp
++++ b/engines/ultima/ultima4/gfx/image.cpp
+@@ -365,8 +365,15 @@ Graphics::ManagedSurface *Image::getSurface(Image *d) const {
+ 	return g_screen;
+ }
+ 
++// ultima-3ds: blits that land on the screen stamp the current depth level
++static inline void u4StampDepth(Graphics::ManagedSurface *dest, int x, int y, int w, int h) {
++	if (dest == g_screen && g_screen)
++		g_screen->_depth.stampRect(x, y, w, h);
++}
++
+ void Image::drawOn(Image *d, int x, int y) const {
+ 	Graphics::ManagedSurface *destSurface = getSurface(d);
++	u4StampDepth(destSurface, x, y, _surface->w, _surface->h);
+ 	destSurface->blitFrom(*_surface, Common::Point(x, y));
+ }
+ 
+@@ -387,9 +394,11 @@ void Image::drawSubRectOn(Image *d, int x, int y, int rx, int ry, int rw, int rh
+ 		srcRect.top = 0;
+ 	}
+ 
+-	if (srcRect.isValidRect())
++	if (srcRect.isValidRect()) {
+ 		// Blit the surface
+ 		destSurface->blitFrom(*_surface, srcRect, destPos);
++		u4StampDepth(destSurface, destPos.x, destPos.y, srcRect.width(), srcRect.height());
++	}
+ }
+ 
+ void Image::drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const {
+@@ -408,6 +417,7 @@ void Image::drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw
+ 		destPos.y = y + rh - i - 1;
+ 
+ 		destSurface->blitFrom(*_surface, src, destPos);
++		u4StampDepth(destSurface, destPos.x, destPos.y, rw, 1);
+ 	}
+ }
+ 
+diff --git a/engines/ultima/ultima4/gfx/screen.cpp b/engines/ultima/ultima4/gfx/screen.cpp
+index 8e7409e8..b0829c99 100644
+--- a/engines/ultima/ultima4/gfx/screen.cpp
++++ b/engines/ultima/ultima4/gfx/screen.cpp
+@@ -1304,6 +1304,16 @@ void Screen::screenRedrawTextArea(int x, int y, int width, int height) {
+ 	g_system->updateScreen();
+ }
+ 
++void Screen::update() {
++	// ultima-3ds: (re)size the depth plane with the screen, push it with the frame
++	if (!_depth.valid() || _depth.width() != w || _depth.height() != h) {
++		_depth.create(w, h);
++		_depth.setLevel(Stereo3DS::kFront); // UI/text by default
++	}
++	_depth.push();
++	Graphics::Screen::update();
++}
++
+ void Screen::screenWait(int numberOfAnimationFrames) {
+ 	update();
+ 	g_system->delayMillis(numberOfAnimationFrames * SCREEN_FRAME_TIME);
+diff --git a/engines/ultima/ultima4/gfx/screen.h b/engines/ultima/ultima4/gfx/screen.h
+index 2e4d59f4..56ffa1b8 100644
+--- a/engines/ultima/ultima4/gfx/screen.h
++++ b/engines/ultima/ultima4/gfx/screen.h
+@@ -22,6 +22,7 @@
+ #ifndef ULTIMA4_GFX_SCREEN_H
+ #define ULTIMA4_GFX_SCREEN_H
+ 
++#include "common/stereo3ds.h"
+ #include "common/file.h"
+ #include "graphics/screen.h"
+ #include "ultima/ultima4/core/config.h"
+@@ -101,6 +102,10 @@ struct Layout {
+ };
+ 
+ class Screen : public Graphics::Screen {
++public:
++	// ultima-3ds: per-pixel depth for stereoscopic 3D (see common/stereo3ds.h)
++	Stereo3DS::DepthPlane _depth;
++	void update() override;
+ private:
+ 	MouseCursorSurface *_mouseCursors[5];
+ 	int _currentMouseCursor;
+diff --git a/engines/ultima/ultima4/views/dungeonview.cpp b/engines/ultima/ultima4/views/dungeonview.cpp
+index c0277093..48fd2660 100644
+--- a/engines/ultima/ultima4/views/dungeonview.cpp
++++ b/engines/ultima/ultima4/views/dungeonview.cpp
+@@ -19,6 +19,7 @@
+  *
+  */
+ 
++#include "common/stereo3ds.h"
+ #include "ultima/ultima4/core/config.h"
+ #include "ultima/ultima4/core/settings.h"
+ #include "ultima/ultima4/gfx/image.h"
+@@ -112,7 +113,15 @@ void DungeonView::display(Context *c, TileView *view) {
+ 	}
+ }
+ 
++// ultima-3ds: first-person dungeon depth from draw distance (0 = adjacent)
++static inline byte u4DungeonLevel(int distance) {
++	int lvl = 6 - distance * 2; // 0 -> 6, 1 -> 4, 2 -> 2, 3+ -> ground
++	if (lvl < Stereo3DS::kGround) lvl = Stereo3DS::kGround;
++	return (byte)lvl;
++}
++
+ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiledWall) {
++	Stereo3DS::ScopedLevel _stereo(g_screen->_depth, u4DungeonLevel(distance)); // ultima-3ds
+ 	Image *scaled;
+ 
+ 	const static int nscale_vga[] = { 12, 8, 4, 2, 1};
+@@ -415,6 +424,7 @@ const struct {
+ };
+ 
+ void DungeonView::drawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
++	Stereo3DS::ScopedLevel _stereo(g_screen->_depth, u4DungeonLevel(distance)); // ultima-3ds
+ 	int index;
+ 
+ 	index = graphicIndex(xoffset, distance, orientation, type);
+diff --git a/engines/ultima/ultima4/views/tileview.cpp b/engines/ultima/ultima4/views/tileview.cpp
+index 2b60fc64..7f9469d8 100644
+--- a/engines/ultima/ultima4/views/tileview.cpp
++++ b/engines/ultima/ultima4/views/tileview.cpp
+@@ -31,6 +31,7 @@
+ #include "ultima/ultima4/views/tileview.h"
+ #include "ultima/ultima4/ultima4.h"
+ #include "common/system.h"
++#include "common/stereo3ds.h"
+ 
+ namespace Ultima {
+ namespace Ultima4 {
+@@ -84,6 +85,7 @@ void TileView::loadTile(MapTile &mapTile) {
+ 
+ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
+ 	Tile *tile = _tileSet->get(mapTile._id);
++	Stereo3DS::ScopedLevel _stereo(g_screen->_depth, tile->isOpaque() ? Stereo3DS::kObject : Stereo3DS::kGround); // ultima-3ds
+ 	Image *image = tile->getImage();
+ 
+ 	assertMsg(x < _columns, "x value of %d out of range", x);
+@@ -122,6 +124,7 @@ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
+ }
+ 
+ void TileView::drawTile(Common::Array<MapTile> &tiles, bool focus, int x, int y) {
++	Stereo3DS::ScopedLevel _stereo(g_screen->_depth, Stereo3DS::kGround); // ultima-3ds
+ 	assertMsg(x < _columns, "x value of %d out of range", x);
+ 	assertMsg(y < _rows, "y value of %d out of range", y);
+ 
+@@ -161,6 +164,11 @@ void TileView::drawTile(Common::Array<MapTile> &tiles, bool focus, int x, int y)
+ 		}
+ 
+ 		// Then draw it to the screen
++		// ultima-3ds: base terrain sits on the ground, solid terrain a step up,
++		// anything stacked on top (party, creatures, ships) floats in front
++		g_screen->_depth.setLevel(t == (int)tiles.size() - 1
++			? (frontTileType->isOpaque() ? Stereo3DS::kObject : Stereo3DS::kGround)
++			: Stereo3DS::kActor);
+ 		_animated->drawSubRectOn(_dest, SCALED(x * _tileWidth + _bounds.left),
+ 			SCALED(y * _tileHeight + _bounds.top), 0, 0,
+ 				SCALED(_tileWidth), SCALED(_tileHeight)
