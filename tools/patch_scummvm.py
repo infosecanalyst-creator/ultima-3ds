@@ -357,3 +357,11 @@ rw(AH,
    "\t}\n"
    "\tif (R_FAILED(rc))\n\t\tsvcBreak(USERBREAK_PANIC);\n",
    "ultima-3ds: back off to 8 MB")
+
+# Default to the game on the bottom (touch) screen only -- no duplicated,
+# off-centre magnified copy on the top screen.
+rw("backends/platform/3ds/options.cpp",
+   'ConfMan.registerDefault("3ds_screen", kScreenBoth);',
+   'ConfMan.registerDefault("3ds_screen", kScreenBottom); // 3DS port: game on the touch screen only',
+   "game on the touch screen only")
+
