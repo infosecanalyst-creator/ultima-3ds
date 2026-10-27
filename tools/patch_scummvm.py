@@ -365,3 +365,100 @@ rw("backends/platform/3ds/options.cpp",
    'ConfMan.registerDefault("3ds_screen", kScreenBottom); // 3DS port: game on the touch screen only',
    "game on the touch screen only")
 
+
+# ------------------------------------------------------- in-game manual (Start)
+# Start opens a built-in manual (backends/platform/3ds/osystem-manual.cpp):
+# text on the top screen, section buttons on the touch screen. ScummVM's
+# global menu (save/load/quit) moves from Start to L; Magnify Mode (L) is
+# unbound -- Ultima runs at 320x200, too small to magnify anyway.
+for f in ("osystem-manual.cpp", "manual3ds.h", "manual_text.h", "font6x13.h", "font6x13b.h"):
+    copy("backends/platform/3ds/" + f)
+rw("backends/platform/3ds/module.mk",
+   "\tosystem-events.o\n",
+   "\tosystem-events.o \\\n\tosystem-manual.o\n",
+   "osystem-manual.o")
+OH = "backends/platform/3ds/osystem.h"
+rw(OH,
+   "\tvolatile bool exiting;\n\tvolatile bool sleeping;\n",
+   "\tvolatile bool exiting;\n\tvolatile bool sleeping;\n"
+   "\tvolatile bool manualOpen = false; // in-game manual showing: input thread paused\n"
+   "\tvoid runManual();                  // osystem-manual.cpp\n",
+   "volatile bool manualOpen")
+EV = "backends/platform/3ds/osystem-events.cpp"
+rw(EV,
+   "\t\t} while (osys->sleeping && !osys->exiting);\n",
+   "\t\t} while ((osys->sleeping || osys->manualOpen) && !osys->exiting); // manual: it reads input itself\n",
+   "osys->manualOpen) && !osys->exiting)")
+rw(EV,
+   "\tk3DSEventToggleDragMode,\n\tk3DSEventToggleMagnifyMode\n};\n",
+   "\tk3DSEventToggleDragMode,\n\tk3DSEventToggleMagnifyMode,\n\tk3DSEventManual\n};\n",
+   "\tk3DSEventManual\n")
+rw(EV,
+   "\tact = new Action(\"MAGM\", _(\"Toggle Magnify Mode\"));\n"
+   "\tact->setCustomBackendActionEvent(k3DSEventToggleMagnifyMode);\n"
+   "\tact->addDefaultInputMapping(\"JOY_LEFT_SHOULDER\");\n\tkeymap->addAction(act);\n",
+   "\tact = new Action(\"MAGM\", _(\"Toggle Magnify Mode\"));\n"
+   "\tact->setCustomBackendActionEvent(k3DSEventToggleMagnifyMode);\n"
+   "\tkeymap->addAction(act); // unbound on this port: L opens the ScummVM menu\n\n"
+   "\tact = new Action(\"MANUAL\", _(\"Instruction manual\"));\n"
+   "\tact->setCustomBackendActionEvent(k3DSEventManual);\n"
+   "\tact->addDefaultInputMapping(\"JOY_START\");\n\tkeymap->addAction(act);\n",
+   "new Action(\"MANUAL\"")
+rw(EV,
+   "\tkeymapperDefaultBindings->setDefaultBinding(\"engine-default\", Common::kStandardActionOpenMainMenu, \"\");\n",
+   "\tkeymapperDefaultBindings->setDefaultBinding(\"engine-default\", Common::kStandardActionOpenMainMenu, \"\");\n"
+   "\t// Start = instruction manual on this port; the ScummVM menu moves to L\n"
+   "\tkeymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, \"MENU\", \"JOY_LEFT_SHOULDER\");\n",
+   "\"MENU\", \"JOY_LEFT_SHOULDER\"")
+rw(EV,
+   "\tif (event.type == Common::EVENT_CUSTOM_BACKEND_ACTION_END) {\n\t\treturn true; // We'll say we have handled the event so it is not propagated\n\t}\n",
+   "\tif (event.type == Common::EVENT_CUSTOM_BACKEND_ACTION_END) {\n"
+   "\t\tif ((_3DSCustomEvent)event.customType == k3DSEventManual)\n"
+   "\t\t\trunManual(); // on release, so the keymapper has seen Start go up\n"
+   "\t\treturn true; // We'll say we have handled the event so it is not propagated\n\t}\n",
+   "runManual(); // on release")
+
+# ------------------------------------------------ Ultima buttons on the 3DS
+# Ultima IV is keyboard driven; give the common commands buttons.
+U4 = "engines/ultima/ultima4/metaengine.cpp"
+t = open(os.path.join(ROOT, U4), encoding="utf-8").read()
+if "JOY_UP" not in t:
+    import re
+    for act, joy in (("UP", "JOY_UP"), ("DOWN", "JOY_DOWN"), ("LEFT", "JOY_LEFT"), ("RIGHT", "JOY_RIGHT"),
+                     ("ESCAPE", "JOY_Y")):
+        t = re.sub(r'(\{ KEYBIND_%s, "%s", [^\n]*?), nullptr \}' % (act, act), r'\1, "%s" }' % joy, t)
+    t = t.replace('"talk", "t", nullptr }', '"talk", "t", "JOY_X" }', 1)
+    t = t.replace('"attack", "a", nullptr }', '"attack", "a", "JOY_LEFT_STICK" }', 1)
+    t = t.replace('"enter", "e", nullptr }', '"enter", "e", "JOY_RIGHT_STICK" }', 1)
+    # menus: X confirms (Talk is not in the menu keymap)
+    t = t.replace('static const KeybindingRecord MENU_KEYS[] = {\n\t{ KEYBIND_INTERACT, "INTERACT", _s("Interact"), "interact", "RETURN", nullptr },',
+                  'static const KeybindingRecord MENU_KEYS[] = {\n\t{ KEYBIND_INTERACT, "INTERACT", _s("Interact"), "interact", "RETURN", "JOY_X" },', 1)
+    assert t.count('"JOY_UP"') >= 3 and '"JOY_X" }' in t, "Ultima IV keymap anchors moved"
+    open(os.path.join(ROOT, U4), "w", encoding="utf-8").write(t)
+    print("  + %-45s 3DS buttons" % U4)
+else:
+    print("  = %-45s already patched" % U4)
+
+U6 = "engines/ultima/nuvie/metaengine.cpp"
+rw(U6,
+   '\t{ "WALK_WEST", _s("Walk west"), "LEFT", "KP4" },\n\t{ "WALK_EAST", _s("Walk east"), "RIGHT", "KP6" },\n'
+   '\t{ "WALK_NORTH", _s("Walk north"), "UP", "KP8" },\n\t{ "WALK_SOUTH", _s("Walk south"), "DOWN", "KP2" },\n',
+   '\t{ "WALK_WEST", _s("Walk west"), "LEFT", "JOY_LEFT" }, // 3DS D-pad\n\t{ "WALK_EAST", _s("Walk east"), "RIGHT", "JOY_RIGHT" },\n'
+   '\t{ "WALK_NORTH", _s("Walk north"), "UP", "JOY_UP" },\n\t{ "WALK_SOUTH", _s("Walk south"), "DOWN", "JOY_DOWN" },\n',
+   '"JOY_LEFT" }, // 3DS D-pad')
+rw(U6,
+   '\t{ "TALK", _s("Talk"), "t", nullptr },\n',
+   '\t{ "TALK", _s("Talk"), "t", "JOY_X" }, // 3DS\n',
+   '"JOY_X" }, // 3DS')
+rw(U6,
+   '\t{ "ATTACK", _s("Attack"), "a", nullptr },\n',
+   '\t{ "ATTACK", _s("Attack"), "a", "JOY_LEFT_STICK" }, // 3DS ZL\n',
+   '"JOY_LEFT_STICK" }, // 3DS ZL')
+rw(U6,
+   '\t{ "USE", _s("Use"), "u", nullptr },\n',
+   '\t{ "USE", _s("Use"), "u", "JOY_RIGHT_STICK" }, // 3DS ZR\n',
+   '"JOY_RIGHT_STICK" }, // 3DS ZR')
+rw(U6,
+   '\t{ "GAME_MENU_DIALOG", _s("Show game menu; Cancel action if in middle of action"), "ESCAPE", nullptr },\n',
+   '\t{ "GAME_MENU_DIALOG", _s("Show game menu; Cancel action if in middle of action"), "ESCAPE", "JOY_Y" }, // 3DS\n',
+   '"ESCAPE", "JOY_Y" }, // 3DS')

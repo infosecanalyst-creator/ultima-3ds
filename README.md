@@ -69,6 +69,26 @@ screenshots; with `STEREO3DS_DUMP` set (it sets it) the depth hook in
 `common/stereo3ds.cpp` writes the engine's depth map as PGMs, and
 `make_stereo.py` composites a screenshot + depth map into left/right eyes.
 
+## Controls and in-game manual (3DS port)
+
+The game fills the touch screen; the top screen is kept free. **Start opens
+a built-in manual** (text on top, section buttons on the touch screen; the
+game waits). Its text is `docs/manual.txt`, compiled into
+`backends/platform/3ds/manual_text.h`; a `manual.txt` in `sdmc:/3ds/scummvm/`
+replaces it without rebuilding.
+
+| Button | Action |
+|---|---|
+| Touch / Circle Pad / A / B | click / cursor / left click / right click |
+| D-pad | walk (Ultima IV and VI) |
+| X | talk (U4 menus: confirm) |
+| Y | cancel / Escape (U6: game menu) |
+| ZL / ZR | attack / U4 enter, U6 use |
+| L | ScummVM menu (save, load, quit) — moved here from Start |
+| R | drag / hover touch mode |
+| Select | on-screen keyboard |
+| Start | instruction manual |
+
 ## Build
 
 ### On a Windows PC with devkitPro (the route used here)
