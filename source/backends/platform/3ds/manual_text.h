@@ -6,8 +6,8 @@ Ultima IV: Quest of the Avatar and Ultima VI: The False Prophet, running in Scum
 Press Start at any time to open this manual: in the launcher, in a game or in a menu. The game waits underneath.
 
 ## Using this manual
-- Circle Pad or D-pad up/down: scroll.
-- L / R or D-pad left/right: change section.
+- Circle Pad or C-Stick up/down: scroll the text (hold to keep scrolling).
+- D-Pad: move between the sections on the touch screen. L / R: previous / next section.
 - Tap a section on the touch screen to jump to it.
 - B, Start or Close: back to the game.
 
