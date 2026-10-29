@@ -14,6 +14,7 @@
 #include <string.h>
 #include <vector>
 #include "backends/platform/3ds/manual3ds.h"
+#include "backends/platform/3ds/click3ds.h"
 #include "backends/platform/3ds/manual_text.h"
 
 #include "backends/platform/3ds/osystem.h"
@@ -102,6 +103,8 @@ void OSystem_3DS::runManual() {
 		const bool wasDirty = g_manual->dirty();
 		if (!g_manual->update(mi))
 			break;
+		if (g_manual->take_click())
+			click3ds::play();               // standard: every tap clicks
 		if (!(redraw || mi.down || mi.touch_down || wasDirty || g_manual->dirty())) {
 			gspWaitForVBlank();
 			continue;

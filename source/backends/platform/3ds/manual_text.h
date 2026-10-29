@@ -15,14 +15,22 @@ Press Start at any time to open this manual: in the launcher, in a game or in a 
 Push the 3D slider up for depth: the party and creatures stand off the ground, and Ultima IV's dungeons recede into the screen. Slide it down for plain 2D.
 
 # The two screens
-## Bottom screen (touch)
-The game, filling the touch screen. Tap it with the stylus as if it were a mouse.
-
 ## Top screen
-The top screen is kept free while you play, so the game is never shown twice. This manual opens there. (An information panel for the top screen is planned.)
+The game, filling the screen.
+
+## Touch screen
+- Left: a map of where you are. Ultima IV shows the land around you, the whole town, or the dungeon level; dungeon levels fill in as you explore. Ultima VI shows the area around you; underground it fills in as you explore.
+- Right: buttons for what the game is waiting for. They change by themselves: commands while you walk, the person's words while you talk, Yes and No for questions, party members, a number pad for amounts, arrows for a direction.
+- Bottom row: ESC, YES, NO, ENTER, TYPE (the 3DS keyboard), SWAP and BOOK (this manual).
+Every tap clicks.
+
+## SWAP (SELECT)
+SELECT or SWAP puts the game on the touch screen, to tap it directly with the stylus (Ultima VI inventories, for example). The top screen then shows a bigger map. SELECT again brings the game back to the top screen.
+
+ScummVM's menus and the launcher always use the touch screen.
 
 # Buttons
-| Touch | Click where you tap
+| Touch | The buttons below the game
 | Circle Pad | Move the mouse cursor
 | A | Left click at the cursor
 | B | Right click
@@ -32,12 +40,12 @@ The top screen is kept free while you play, so the game is never shown twice. Th
 | ZL | Attack
 | ZR | U4: Enter. U6: Use
 | L | ScummVM menu: save, load, quit
-| R | Switch drag / hover touch mode
-| Select | On-screen keyboard
+| R | Drag / hover touch mode (game on the touch screen)
+| Select | Game on top / on the touch screen
 | Start | Open this manual
 
 ## Touch modes
-Drag mode (the default): touching presses the mouse button, lifting releases it. Hover mode: touching only moves the cursor, a quick tap clicks. R switches between them.
+With the game on the touch screen (SELECT): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.
 
 # Launcher and saving
 ## Starting a game
@@ -54,12 +62,13 @@ Drag mode (the default): touching presses the mouse button, lifting releases it.
 ## Saves and settings
 Saves and the settings file live in sdmc:/3ds/scummvm/ on the SD card.
 
-# Typing
-Both games ask you to type: names, and the words you say to people.
-1. Press Select for the on-screen keyboard.
-2. Tap the letters, then Enter.
-3. Press Select again to hide it.
-Only the first four letters of a word matter in conversation: JOB and NAME, HEAL for health.
+# Talking and typing
+While you talk, the touch screen shows the words to say as buttons:
+- Ultima IV: Name, Job, Health, Look, the two words this person knows best, Join, Give and Bye.
+- Ultima VI: Name, Job, Join, Bye and the words people highlight as they speak.
+For anything else tap TYPE, type on the 3DS keyboard and press OK; the game gets the word and Enter.
+When the game asks for a name or a mantra, the keyboard opens by itself.
+Only the first four letters of a word matter in Ultima IV: JOB and NAME, HEAL for health.
 
 # Ultima IV: the quest
 You are not asked to defeat a villain. Britannia needs a spiritual leader: an Avatar who lives by the eight virtues.
@@ -83,7 +92,7 @@ A gypsy asks you questions of virtue. Answer honestly: your answers choose your 
 - Descend into the Stygian Abyss to reach the Codex of Ultimate Wisdom.
 
 # Ultima IV: commands
-Each command is a key. Press Select for the keyboard, or use the buttons where shown.
+Each command is a button on the touch screen; More... shows all of them. The buttons in brackets work too.
 
 | A (ZL) | Attack, then a direction
 | B | Board a horse or ship
@@ -114,7 +123,7 @@ Each command is a key. Press Select for the keyboard, or use the buttons where s
 
 # Ultima IV: talking
 ## Talking
-Press X (Talk) and a direction, then type words. Everyone answers NAME and JOB. Try the words they mention back to them. HEALTH and LOOK are useful. Say BYE to leave.
+Press X (Talk) and a direction, then tap the words on the touch screen. Everyone answers NAME and JOB. Try the words they mention back to them. HEALTH and LOOK are useful. Say BYE to leave.
 
 Some people ask a question back: answer Y or N.
 
@@ -136,16 +145,16 @@ At the title, choose Create Character for a new game; a gypsy's questions set yo
 Ultima VI is played with the mouse.
 
 ## The command bar
-Icons along the bottom of the screen: Attack, Cast, Talk, Look, Get, Drop, Move, Use, Rest and combat mode. Tap an icon, then tap who or what it is for.
+The touch screen has the commands: Talk, Look, Get, Use, Move, Drop, Attack, Cast, Rest, Combat and Party view; More... has save, load, party mode and the rest. After a command, pick who or what it is for with the D-pad (or the arrow buttons) and press A or Select. With the game on the touch screen (SELECT) the icons along the bottom of the game work with the stylus too.
 
 ## Moving
 Walk with the D-pad. Doors, ladders and objects are used with Use (ZR) or the Use icon.
 
 ## Inventory
-Tap a party member's portrait to open their inventory. Drag items between hands, body and backpack, or onto another portrait to pass them over.
+Tap Inventory (under the map). To drag items between hands, body and backpack, press SELECT to put the game on the touch screen and use the stylus.
 
 ## Talking
-Press X or choose Talk and tap a person, then type words with the keyboard (Select). NAME, JOB and BYE always work; try the words they use.
+Press X or Talk, pick the person with the D-pad and press A, then tap the words on the touch screen. NAME, JOB and BYE always work; the highlighted words they use appear as buttons.
 
 ## Game menu
 Y (Escape) opens Ultima VI's own menu: save, load, settings. The ScummVM menu (L) works too.
@@ -159,7 +168,8 @@ Y (Escape) opens Ultima VI's own menu: save, load, settings. The ScummVM menu (L
 
 # Troubleshooting
 - Game not listed: Add Game in the launcher and choose the ULTIMA4 or ULTIMA6 folder.
-- Taps not clicking: press R to return to drag mode.
+- Game on the wrong screen: press SELECT.
+- Taps not clicking with the game on the touch screen: press R to return to drag mode.
 - Buttons do the wrong thing: in Options, Keymaps, reset the Ultima keymaps to their defaults.
 - No depth: push the 3D slider up; menus are flat on purpose.
 - Replace this manual: put your own manual.txt in sdmc:/3ds/scummvm/.

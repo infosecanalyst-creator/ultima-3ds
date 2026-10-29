@@ -371,7 +371,7 @@ rw("backends/platform/3ds/options.cpp",
 # text on the top screen, section buttons on the touch screen. ScummVM's
 # global menu (save/load/quit) moves from Start to L; Magnify Mode (L) is
 # unbound -- Ultima runs at 320x200, too small to magnify anyway.
-for f in ("osystem-manual.cpp", "manual3ds.h", "manual_text.h", "font6x13.h", "font6x13b.h"):
+for f in ("osystem-manual.cpp", "manual3ds.h", "click3ds.h", "manual_text.h", "font6x13.h", "font6x13b.h"):
     copy("backends/platform/3ds/" + f)
 rw("backends/platform/3ds/module.mk",
    "\tosystem-events.o\n",
@@ -462,3 +462,201 @@ rw(U6,
    '\t{ "GAME_MENU_DIALOG", _s("Show game menu; Cancel action if in middle of action"), "ESCAPE", nullptr },\n',
    '\t{ "GAME_MENU_DIALOG", _s("Show game menu; Cancel action if in middle of action"), "ESCAPE", "JOY_Y" }, // 3DS\n',
    '"ESCAPE", "JOY_Y" }, // 3DS')
+
+# ------------------------------------------------ touch pad (game on top)
+# The game moves to the top screen and the touch screen shows an automap and
+# buttons for what the game is waiting for (common/pad3ds.h). The engines
+# only report their state; the backend sends ordinary keys.
+copy("common/pad3ds.h")
+copy("common/pad3ds.cpp")
+rw("common/module.mk",
+   "MODULE_OBJS := \\\n",
+   "MODULE_OBJS := \\\n\tpad3ds.o \\\n",
+   "pad3ds.o")
+copy("engines/ultima/ultima4/pad3ds_u4.cpp")
+copy("engines/ultima/nuvie/pad3ds_u6.cpp")
+rw("engines/ultima/module.mk",
+   "\tultima4/metaengine.o \\\n\tultima4/ultima4.o\n",
+   "\tultima4/metaengine.o \\\n\tultima4/pad3ds_u4.o \\\n\tultima4/ultima4.o\n",
+   "ultima4/pad3ds_u4.o")
+rw("engines/ultima/module.mk",
+   "\tnuvie/metaengine.o \\\n",
+   "\tnuvie/metaengine.o \\\n\tnuvie/pad3ds_u6.o \\\n",
+   "nuvie/pad3ds_u6.o")
+
+# Ultima IV: accessors the pad needs, and the conversation start/end
+rw("engines/ultima/ultima4/conversation/conversation.h",
+   "\tKeyword *operator[](const Common::String &kw);\n",
+   "\tKeyword *operator[](const Common::String &kw);\n"
+   "\tconst KeywordMap &keywords() const { return _keywords; } // ultima-3ds pad\n",
+   "keywords() const { return _keywords; } // ultima-3ds pad")
+rw("engines/ultima/ultima4/controllers/read_choice_controller.h",
+   "\tstatic char get(const Common::String &choices, EventHandler *eh = nullptr);\n",
+   "\tstatic char get(const Common::String &choices, EventHandler *eh = nullptr);\n"
+   "\tconst Common::String &choices() const { return _choices; } // ultima-3ds pad\n",
+   "choices() const { return _choices; } // ultima-3ds pad")
+rw("engines/ultima/ultima4/game/person.h",
+   "\tvoid setDialogue(Dialogue *d);\n",
+   "\tvoid setDialogue(Dialogue *d);\n"
+   "\tDialogue *getDialogue() const { return _dialogue; } // ultima-3ds pad\n",
+   "getDialogue() const { return _dialogue; } // ultima-3ds pad")
+DA = "engines/ultima/ultima4/core/debugger_actions.cpp"
+rw(DA,
+   "void DebuggerActions::talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {\n",
+   "void pad3dsTalkBegin(Conversation *conv, Person *talker); // ultima-3ds pad (pad3ds_u4.cpp)\n"
+   "void pad3dsTalkEnd();\n\n"
+   "void DebuggerActions::talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {\n"
+   "\tpad3dsTalkBegin(&conv, talker);\n",
+   "\tpad3dsTalkBegin(&conv, talker);")
+rw(DA,
+   "\tif (conv._reply.size() > 0)\n\t\tg_screen->screenMessage(\"%s\", conv._reply.front().c_str());\n}\n",
+   "\tif (conv._reply.size() > 0)\n\t\tg_screen->screenMessage(\"%s\", conv._reply.front().c_str());\n"
+   "\tpad3dsTalkEnd();\n}\n",
+   "\tpad3dsTalkEnd();\n}")
+rw(U4SC,
+   "void Screen::update() {\n",
+   "void pad3dsUpdate(); // ultima-3ds pad (pad3ds_u4.cpp)\n\n"
+   "void Screen::update() {\n\tpad3dsUpdate();\n",
+   "void Screen::update() {\n\tpad3dsUpdate();")
+
+# Ultima VI: scroll state accessors, conversation words, per-frame update
+rw("engines/ultima/nuvie/gui/widgets/msg_scroll.h",
+   "public:\n\n\tMsgScroll(const Configuration *cfg, Font *f);\n",
+   "public:\n"
+   "\t// ultima-3ds pad: what the scroll is waiting for\n"
+   "\tbool pad3dsInputMode() const { return input_mode; }\n"
+   "\tconst char *pad3dsPermit() const { return permit_input; }\n"
+   "\tbool pad3dsYesNo() const { return yes_no_only || aye_nay_only; }\n"
+   "\tbool pad3dsNumbers() const { return numbers_only; }\n"
+   "\tbool pad3dsPageBreak() const { return page_break; }\n\n"
+   "\tMsgScroll(const Configuration *cfg, Font *f);\n",
+   "bool pad3dsInputMode() const")
+CV = "engines/ultima/nuvie/core/converse.cpp"
+rw(CV,
+   "bool Converse::start(uint8 n) {\n",
+   "void pad3dsTalkBegin(); // ultima-3ds pad (pad3ds_u6.cpp)\n"
+   "void pad3dsConverseText(const char *s);\n\n"
+   "bool Converse::start(uint8 n) {\n\tpad3dsTalkBegin();\n",
+   "bool Converse::start(uint8 n) {\n\tpad3dsTalkBegin();")
+rw(CV,
+   "\tif (s)\n\t\tscroll->display_string(s, MSGSCROLL_NO_MAP_DISPLAY);\n"
+   "\telse\n\t\tscroll->display_string(get_output(), MSGSCROLL_NO_MAP_DISPLAY);\n",
+   "\tpad3dsConverseText(s ? s : get_output().c_str()); // ultima-3ds pad\n"
+   "\tif (s)\n\t\tscroll->display_string(s, MSGSCROLL_NO_MAP_DISPLAY);\n"
+   "\telse\n\t\tscroll->display_string(get_output(), MSGSCROLL_NO_MAP_DISPLAY);\n",
+   "pad3dsConverseText(s ? s : get_output().c_str());")
+rw(SC,
+   "void Screen::update() {\n\tdepth.push(); // ultima-3ds\n",
+   "void pad3dsUpdate(); // ultima-3ds pad (pad3ds_u6.cpp)\n\n"
+   "void Screen::update() {\n\tpad3dsUpdate();\n\tdepth.push(); // ultima-3ds\n",
+   "void Screen::update() {\n\tpad3dsUpdate();")
+rw(SC,
+   "void Screen::performUpdate() {\n\tdepth.push(); // ultima-3ds (partial)\n",
+   "void Screen::performUpdate() {\n\tpad3dsUpdate();\n\tdepth.push(); // ultima-3ds (partial)\n",
+   "void Screen::performUpdate() {\n\tpad3dsUpdate();")
+print("done")
+
+# Backend: the pad itself (osystem-pad.cpp, pad_ui.h)
+for f in ("osystem-pad.cpp", "pad_ui.h"):
+    copy("backends/platform/3ds/" + f)
+rw("backends/platform/3ds/module.mk",
+   "\tosystem-manual.o\n",
+   "\tosystem-manual.o \\\n\tosystem-pad.o\n",
+   "osystem-pad.o")
+rw(OH,
+   "\tvoid runManual();                  // osystem-manual.cpp\n",
+   "\tvoid runManual();                  // osystem-manual.cpp\n"
+   "\t// Ultima touch pad (osystem-pad.cpp): game on the top screen, buttons below\n"
+   "\tvolatile bool padTouch = false;    // taps go to the pad (read by the input thread)\n"
+   "\tint padMode = 0;                   // 0 normal, 1 game on top + pad, 2 game below + map on top\n"
+   "\tvoid padUpdateLayout();\n\tvoid padPrepare();\n\tvoid padRenderBottom();\n\tvoid padRenderTop();\n"
+   "\tvoid padQueueTap(int x, int y);\n\tvoid padPump();\n\tvoid padToggleSwap();\n"
+   "\tvoid padSendKey(const Common::KeyState &ks);\n\tvoid padTypeText(const char *t);\n"
+   "\tvoid padOpenKeyboard();\n\tvoid pushPadEvent(Common::Event &e);\n",
+   "volatile bool padTouch")
+rw(G,
+   "\tif (sleeping || exiting) {\n\t\treturn;\n\t}\n\n\tif (!_dirtyRects.empty()) {\n",
+   "\tif (sleeping || exiting) {\n\t\treturn;\n\t}\n\n\tpadUpdateLayout(); // ultima-3ds pad\n\n\tif (!_dirtyRects.empty()) {\n",
+   "\tpadUpdateLayout(); // ultima-3ds pad")
+rw(G,
+   "\t\t_osdMessage.transfer();\n\t\t_activityIcon.transfer();\n\tC3D_FrameEnd(0);\n",
+   "\t\t_osdMessage.transfer();\n\t\t_activityIcon.transfer();\n\t\tpadPrepare(); // ultima-3ds pad\n\tC3D_FrameEnd(0);\n",
+   "\t\tpadPrepare(); // ultima-3ds pad")
+rw(G,
+   "\t\tC3D_RenderTargetClear(topTarget, C3D_CLEAR_ALL, 0x00000000, 0);\n\t\tC3D_FrameDrawOn(topTarget);\n",
+   "\t\tC3D_RenderTargetClear(topTarget, C3D_CLEAR_ALL, 0x00000000, 0);\n\t\tC3D_FrameDrawOn(topTarget);\n"
+   "\t\tpadRenderTop(); // ultima-3ds pad: the map while the game is on the touch screen\n",
+   "\t\tpadRenderTop(); // ultima-3ds pad")
+rw(G,
+   "\t\t\t_gameTopTexture.setFilteringMode(_magnifyMode != MODE_MAGON && _filteringEnabled);\n"
+   "\t\t\tstereo3dsRenderGame(eye, _gameTopTexture, _modelviewLocation);\n",
+   "\t\t\t// ultima-3ds pad: smooth scaling when the game fills the top screen (1.2x)\n"
+   "\t\t\t_gameTopTexture.setFilteringMode(padMode == 1 || (_magnifyMode != MODE_MAGON && _filteringEnabled));\n"
+   "\t\t\tstereo3dsRenderGame(eye, _gameTopTexture, _modelviewLocation);\n",
+   "_gameTopTexture.setFilteringMode(padMode == 1 ||")
+rw(G,
+   "\t\t\t\t_cursorTexture.render();\n\t\t\t}\n\t\t}\n\tC3D_FrameEnd(0);\n}\n",
+   "\t\t\t\t_cursorTexture.render();\n\t\t\t}\n\t\t}\n\t\tpadRenderBottom(); // ultima-3ds pad\n\tC3D_FrameEnd(0);\n}\n",
+   "\t\tpadRenderBottom(); // ultima-3ds pad")
+rw("backends/platform/3ds/osystem.cpp",
+   "void OSystem_3DS::updateBacklight() {\n",
+   "void OSystem_3DS::updateBacklight() {\n"
+   "\tif (padMode) { // ultima-3ds pad: both screens in use\n"
+   "\t\tif (R_SUCCEEDED(gspLcdInit())) {\n\t\t\tGSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTH);\n\t\t\tgspLcdExit();\n\t\t}\n"
+   "\t\treturn;\n\t}\n",
+   "ultima-3ds pad: both screens in use")
+rw(EV,
+   "\t\t// Touch screen events\n\t\tif (held & KEY_TOUCH) {\n",
+   "\t\t// ultima-3ds pad: while the game is on the top screen, taps go to the\n"
+   "\t\t// pad's buttons (decided when the stylus goes down)\n"
+   "\t\tstatic bool padCapture = false;\n"
+   "\t\tif (keysPressed & KEY_TOUCH)\n\t\t\tpadCapture = osys->padTouch;\n"
+   "\t\tif (padCapture) {\n"
+   "\t\t\tif (keysPressed & KEY_TOUCH) {\n\t\t\t\ttouchPosition t;\n\t\t\t\thidTouchRead(&t);\n"
+   "\t\t\t\tosys->padQueueTap(t.px, t.py);\n\t\t\t}\n"
+   "\t\t\tif (!(held & KEY_TOUCH))\n\t\t\t\tpadCapture = false;\n"
+   "\t\t} else\n"
+   "\t\t// Touch screen events\n\t\tif (held & KEY_TOUCH) {\n",
+   "static bool padCapture = false;")
+rw(EV,
+   "void OSystem_3DS::initEvents() {\n",
+   "void OSystem_3DS::pushPadEvent(Common::Event &e) { // ultima-3ds pad\n"
+   "\tpushEventQueue(&_eventQueue, e);\n}\n\n"
+   "void OSystem_3DS::initEvents() {\n",
+   "void OSystem_3DS::pushPadEvent(")
+rw(EV,
+   "\tCommon::StackLock lock(*eventMutex);\n\n\tif (_eventQueue.empty()) {\n",
+   "\tpadPump(); // ultima-3ds pad: taps -> keys (outside the lock: it may open the keyboard)\n\n"
+   "\tCommon::StackLock lock(*eventMutex);\n\n\tif (_eventQueue.empty()) {\n",
+   "\tpadPump(); // ultima-3ds pad")
+rw(EV,
+   "\tk3DSEventToggleMagnifyMode,\n\tk3DSEventManual\n};\n",
+   "\tk3DSEventToggleMagnifyMode,\n\tk3DSEventManual,\n\tk3DSEventSwap\n};\n",
+   "\tk3DSEventSwap\n")
+rw(EV,
+   "\tact->addDefaultInputMapping(\"JOY_START\");\n\tkeymap->addAction(act);\n",
+   "\tact->addDefaultInputMapping(\"JOY_START\");\n\tkeymap->addAction(act);\n\n"
+   "\t// ultima-3ds pad: SELECT moves the game between the two screens\n"
+   "\tact = new Action(\"SWAP\", _(\"Game on top / touch screen\"));\n"
+   "\tact->setCustomBackendActionEvent(k3DSEventSwap);\n"
+   "\tact->addDefaultInputMapping(\"JOY_BACK\");\n\tkeymap->addAction(act);\n",
+   "new Action(\"SWAP\"")
+rw(EV,
+   "\tkeymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, \"MENU\", \"JOY_LEFT_SHOULDER\");\n",
+   "\tkeymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, \"MENU\", \"JOY_LEFT_SHOULDER\");\n"
+   "\t// SELECT swaps screens (ultima-3ds pad); the pad's TYPE button opens the keyboard\n"
+   "\tkeymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, \"VIRT\", \"C+F7\");\n",
+   "\"VIRT\", \"C+F7\"")
+rw(EV,
+   "\tswitch ((_3DSCustomEvent)event.customType) {\n\tcase k3DSEventToggleDragMode:\n",
+   "\tswitch ((_3DSCustomEvent)event.customType) {\n"
+   "\tcase k3DSEventSwap:\n\t\tpadToggleSwap(); // ultima-3ds pad\n\t\treturn true;\n\n"
+   "\tcase k3DSEventToggleDragMode:\n",
+   "\tcase k3DSEventSwap:\n")
+rw("backends/platform/3ds/main.cpp",
+   "\tgfxSetWide(systemModel != SYSTEM_MODEL_2DS);\n",
+   "\t// ultima-3ds: stereo 3D needs the normal 400 px top screen; in 800 px mode\n"
+   "\t// (which 3D switches off) the top screen showed its left half, stretched.\n"
+   "\tgfxSetWide(false);\n\t(void)systemModel;\n",
+   "gfxSetWide(false);")
+print("done")
