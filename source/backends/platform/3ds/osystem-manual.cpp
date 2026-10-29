@@ -54,6 +54,11 @@ void OSystem_3DS::runManual() {
 	}
 
 	manualOpen = true;
+	// the game may be using the touch screen only, with the top backlight off
+	if (R_SUCCEEDED(gspLcdInit())) {
+		GSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTH);
+		gspLcdExit();
+	}
 	delayMillis(30);                        // let the input thread finish its scan
 
 	static std::vector<uint8_t> topPx(400 * 240 * 3), botPx(320 * 240 * 3);
@@ -138,6 +143,7 @@ void OSystem_3DS::runManual() {
 		delayMillis(10);
 	}
 	manualOpen = false;
+	updateBacklight();                      // back to the game's screen setting
 	updateScreen();                         // the game's frame is still in its textures
 }
 
