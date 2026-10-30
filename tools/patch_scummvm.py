@@ -392,7 +392,7 @@ rw(EV,
 rw(EV,
    "\tk3DSEventToggleDragMode,\n\tk3DSEventToggleMagnifyMode\n};\n",
    "\tk3DSEventToggleDragMode,\n\tk3DSEventToggleMagnifyMode,\n\tk3DSEventManual\n};\n",
-   "\tk3DSEventManual\n")
+   "\tk3DSEventManual")
 rw(EV,
    "\tact = new Action(\"MAGM\", _(\"Toggle Magnify Mode\"));\n"
    "\tact->setCustomBackendActionEvent(k3DSEventToggleMagnifyMode);\n"
