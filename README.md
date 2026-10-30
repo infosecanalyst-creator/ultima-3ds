@@ -1,5 +1,7 @@
 # Ultima IV & VI on the New 3DS — with stereoscopic 3D
 
+> **Bring your own game files.** No game data is included: you need your own copies of *Ultima IV* and *Ultima VI* (GOG).
+
 Both games already run on the 3DS through ScummVM's Ultima engine (xu4 and
 Nuvie merged upstream). This project adds the part ScummVM can't do by
 itself: **real stereoscopic depth**, so creatures and the party float above
