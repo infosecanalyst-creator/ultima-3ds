@@ -660,3 +660,24 @@ rw("backends/platform/3ds/main.cpp",
    "\tgfxSetWide(false);\n\t(void)systemModel;\n",
    "gfxSetWide(false);")
 print("done")
+
+# ------------------------------------------ Ultima IV "enhancements" clash
+# Ultima IV saves its own "enhancements" option as true/false in the game's
+# settings, but ScummVM itself reads "enhancements" as a number when any game
+# starts: "ConfigManager::getInt(enhancements): 'true' is not a valid integer".
+# Give Ultima IV its own key and drop a true/false value left behind.
+rw("engines/ultima/ultima4/core/settings.cpp",
+   '\ts.syncAsBool("enhancements", _enhancements, DEFAULT_ENHANCEMENTS);\n',
+   '\ts.syncAsBool("u4_enhancements", _enhancements, DEFAULT_ENHANCEMENTS); // ultima-3ds: own key\n',
+   '"u4_enhancements"')
+rw("engines/engine.cpp",
+   '\t_activeEnhancements = (int32)ConfMan.getInt("enhancements");\n',
+   '\t// ultima-3ds: older Ultima IV builds saved "enhancements" as true/false\n'
+   '\tif (ConfMan.hasKey("enhancements", _targetName)) {\n'
+   '\t\tconst Common::String v = ConfMan.get("enhancements", _targetName);\n'
+   '\t\tif (v.empty() || !Common::isDigit(v[0]))\n'
+   '\t\t\tConfMan.removeKey("enhancements", _targetName);\n'
+   '\t}\n'
+   '\t_activeEnhancements = (int32)ConfMan.getInt("enhancements");\n',
+   "older Ultima IV builds saved")
+print("done")
