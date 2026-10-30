@@ -13,9 +13,9 @@ ScummVM was built natively with this patch and only the Ultima engine, and
 Ultima VI was played through it (Journey Onward, walking, combat at the
 shrine) under Xvfb with scripted input. The engine's own depth maps were
 captured and composited into a stereo pair with the same rules the 3DS
-backend uses — see `docs/preview-u6-real-engine-stereo.png`: floor level 0,
-altar/objects 1, party and gargoyles 2, the parchment GUI 3, exactly as
-designed. Ultima IV's intro resisted scripted input (its menu eats keys
+backend uses (floor level 0,
+altar/objects 1, party and gargoyles 2, the parchment GUI 3), exactly as
+designed. Screenshots of the game are deliberately not included here. Ultima IV's intro resisted scripted input (its menu eats keys
 during the title animation), so its in-game frames are not captured yet;
 its stamping code is the same mechanism plus the dungeon-distance rule.
 
@@ -161,3 +161,15 @@ like any other game. The 3D slider controls the depth strength.
 - Performance: 4–7 extra 320×200 RGBA texture uploads per frame. Trivial on
   the New 3DS; untested on Old 3DS (and Old 3DS can't run U6 well anyway).
 - `--enable-release-mode` strips asserts; drop it while debugging.
+
+## Licence
+
+GPL-3.0-or-later, the same as ScummVM; the full text is in [`LICENSE`](LICENSE). The
+build downloads ScummVM and applies `tools/patch_scummvm.py`;
+`patches/scummvm-stereo-reference.diff` shows every change made to it.
+
+## Disclaimer
+
+Not affiliated with or endorsed by the ScummVM project, Electronic Arts, Origin Systems or
+Nintendo. *Ultima* is a trademark of Electronic Arts and is used here only to say which
+game files the engine reads. No game data or game artwork is included.
