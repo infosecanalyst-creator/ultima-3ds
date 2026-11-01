@@ -40,7 +40,7 @@ static bool s_swapped = false;          // SELECT: game on the touch screen
 static uint32 s_lastFrame = 0, s_lastFrameTime = 0;
 static uint32 s_autoTypeSerial = ~0u;
 
-struct Tap { int x, y; };
+struct Tap { int x, y; };   // x < 0: a button press, y = PadNav
 static Common::Mutex *s_tapMutex = nullptr;
 static Tap s_taps[8];
 static int s_ntaps = 0;
@@ -102,6 +102,10 @@ void OSystem_3DS::padPrepare() {
 	if (Pad3DS::info.serial != s_pad.lastSerial) {
 		s_pad.lastSerial = Pad3DS::info.serial;
 		PadUI::build(s_pad);
+		if (s_pad.focus >= 0) {          // D-pad in use: start on the new page's first button
+			s_pad.focus = -1;
+			PadUI::moveFocus(s_pad, 0, 0);
+		}
 		s_bottomDirty = true;
 	}
 	if (Pad3DS::info.mapSerial != s_drawnMapSerial) {
@@ -154,6 +158,11 @@ void OSystem_3DS::padQueueTap(int x, int y) {
 		s_taps[s_ntaps].y = y;
 		++s_ntaps;
 	}
+}
+
+// Input thread: D-pad / A / B while the pad is showing (see PadNav).
+void OSystem_3DS::padQueueNav(int nav) {
+	padQueueTap(-1, nav);
 }
 
 void OSystem_3DS::padToggleSwap() {
@@ -254,8 +263,29 @@ void OSystem_3DS::padPump() {
 		return;
 
 	for (int i = 0; i < n; ++i) {
-		const int idx = PadUI::hit(s_pad, taps[i].x, taps[i].y);
-		if (idx < 0)
+		int idx;
+		if (taps[i].x < 0) {               // D-pad / A / B
+			const int nav = taps[i].y;
+			if (nav == kNavB) {
+				padSendKey(Common::KeyState(Common::KEYCODE_ESCAPE, Common::ASCII_ESCAPE));
+				continue;
+			}
+			if (nav != kNavA) {
+				PadUI::moveFocus(s_pad, nav == kNavLeft ? -1 : nav == kNavRight ? 1 : 0,
+				                 nav == kNavUp ? -1 : nav == kNavDown ? 1 : 0);
+				s_bottomDirty = true;
+				continue;
+			}
+			if (s_pad.focus < 0) {         // A before any D-pad: show the focus first
+				PadUI::moveFocus(s_pad, 0, 0);
+				s_bottomDirty = true;
+				continue;
+			}
+			idx = s_pad.focus;
+		} else {
+			idx = PadUI::hit(s_pad, taps[i].x, taps[i].y);
+		}
+		if (idx < 0 || idx >= (int)s_pad.buttons.size())
 			continue;
 		const PadUI::Button bt = s_pad.buttons[idx];   // copy: actions may rebuild the list
 		s_pad.flash = idx;

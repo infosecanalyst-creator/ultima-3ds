@@ -4,9 +4,11 @@
 //       tools/test_pad.cpp source/common/pad3ds.cpp -o /tmp/test_pad && /tmp/test_pad /tmp/padout
 #include <stdio.h>
 #include <string.h>
+#include <vector>
 #include "backends/platform/3ds/pad_ui.h"
 
 using namespace Pad3DS;
+static int g_bad = 0;
 static uint8_t px[320 * 240 * 3], tpx[400 * 240 * 3];
 
 static void save(const char *dir, const char *name, PadUI::Canvas &cv) {
@@ -28,6 +30,26 @@ static void page(const char *dir, const char *name, bool more = false, int flash
 	save(dir, name, cv);
 	for (auto &b : st.buttons)
 		if (b.x < 0 || b.y < 0 || b.x + b.w > 320 || b.y + b.h > 240) printf("OFFSCREEN %s: %s\n", name, b.label.c_str());
+	// D-pad: every button must be reachable from the first focus
+	const int n = (int)st.buttons.size();
+	std::vector<bool> seen(n, false);
+	std::vector<int> todo;
+	PadUI::moveFocus(st, 0, 1);
+	if (st.focus >= 0) { seen[st.focus] = true; todo.push_back(st.focus); }
+	while (!todo.empty()) {
+		const int at = todo.back(); todo.pop_back();
+		const int d[4][2] = { {0,-1}, {0,1}, {-1,0}, {1,0} };
+		for (auto &v : d) {
+			st.focus = at; PadUI::moveFocus(st, v[0], v[1]);
+			if (!seen[st.focus]) { seen[st.focus] = true; todo.push_back(st.focus); }
+		}
+	}
+	for (int i = 0; i < n; ++i)
+		if (!seen[i]) { printf("UNREACHABLE %s: %s\n", name, st.buttons[i].label.c_str()); ++g_bad; }
+	st.focus = n > 1 ? 1 : 0;
+	PadUI::draw(cv, st, 0);
+	char fn[64]; snprintf(fn, sizeof(fn), "%s_focus", name);
+	save(dir, fn, cv);
 }
 
 int main(int argc, char **argv) {
@@ -80,5 +102,6 @@ int main(int argc, char **argv) {
 
 	for (auto &c : PadUI::cutLabels()) printf("CUT: %s\n", c.c_str());
 	printf("%s\n", PadUI::cutLabels().empty() ? "all labels fit" : "LABELS CUT");
+	printf("%s\n", g_bad ? "SOME BUTTONS UNREACHABLE" : "every button reachable with the D-pad");
 	return PadUI::cutLabels().empty() ? 0 : 1;
 }

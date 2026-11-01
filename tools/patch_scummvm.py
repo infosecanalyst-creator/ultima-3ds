@@ -681,3 +681,80 @@ rw("engines/engine.cpp",
    '\t_activeEnhancements = (int32)ConfMan.getInt("enhancements");\n',
    "older Ultima IV builds saved")
 print("done")
+
+# ------------------------------- pad: D-pad between buttons, stick walks
+# While the pad is showing: the D-pad moves a focus between the pad's
+# buttons, A presses the focused one, B is Escape, and the Circle Pad walks
+# (arrow keys, repeating while held). The mouse cursor is hidden on the top
+# screen. The audio thread gets four buffers instead of two (choppy sound).
+rw(OH,
+   "\tvoid padOpenKeyboard();\n\tvoid pushPadEvent(Common::Event &e);\n",
+   "\tvoid padOpenKeyboard();\n\tvoid pushPadEvent(Common::Event &e);\n"
+   "\tvoid padQueueNav(int nav);             // input thread: D-pad / A / B on the pad\n"
+   "\tenum { kNavUp = 1, kNavDown, kNavLeft, kNavRight, kNavA, kNavB };\n",
+   "void padQueueNav(int nav);")
+rw(EV,
+   "\t\t// C-Pad events\n\t\tcirclePosition circle;\n\t\thidCircleRead(&circle);\n",
+   "\t\t// C-Pad events\n\t\tcirclePosition circle;\n\t\thidCircleRead(&circle);\n\n"
+   "\t\t// ultima-3ds pad: the Circle Pad walks (arrow keys) while the pad shows\n"
+   "\t\tstatic Common::KeyCode padWalkKey = Common::KEYCODE_INVALID;\n"
+   "\t\tstatic uint32 padWalkNext = 0;\n"
+   "\t\t{\n"
+   "\t\t\tCommon::KeyCode dir = Common::KEYCODE_INVALID;\n"
+   "\t\t\tif (osys->padTouch && (abs(circle.dx) > 60 || abs(circle.dy) > 60))\n"
+   "\t\t\t\tdir = abs(circle.dx) > abs(circle.dy) ? (circle.dx > 0 ? Common::KEYCODE_RIGHT : Common::KEYCODE_LEFT)\n"
+   "\t\t\t\t                                     : (circle.dy > 0 ? Common::KEYCODE_UP : Common::KEYCODE_DOWN);\n"
+   "\t\t\tconst uint32 nowMs = osys->getMillis();\n"
+   "\t\t\tCommon::Event k;\n"
+   "\t\t\tif (dir != padWalkKey) {\n"
+   "\t\t\t\tif (padWalkKey != Common::KEYCODE_INVALID) {\n"
+   "\t\t\t\t\tk.type = Common::EVENT_KEYUP;\n\t\t\t\t\tk.kbd = Common::KeyState(padWalkKey);\n"
+   "\t\t\t\t\tpushEventQueue(eventQueue, k);\n\t\t\t\t}\n"
+   "\t\t\t\tpadWalkKey = dir;\n"
+   "\t\t\t\tif (dir != Common::KEYCODE_INVALID) {\n"
+   "\t\t\t\t\tk.type = Common::EVENT_KEYDOWN;\n\t\t\t\t\tk.kbd = Common::KeyState(dir);\n"
+   "\t\t\t\t\tpushEventQueue(eventQueue, k);\n\t\t\t\t\tpadWalkNext = nowMs + 300;\n\t\t\t\t}\n"
+   "\t\t\t} else if (dir != Common::KEYCODE_INVALID && nowMs >= padWalkNext) {\n"
+   "\t\t\t\tk.type = Common::EVENT_KEYDOWN;\n\t\t\t\tk.kbd = Common::KeyState(dir);\n\t\t\t\tk.kbdRepeat = true;\n"
+   "\t\t\t\tpushEventQueue(eventQueue, k);\n\t\t\t\tpadWalkNext = nowMs + 170;\n"
+   "\t\t\t}\n"
+   "\t\t\tif (osys->padTouch)\n\t\t\t\tcircle.dx = circle.dy = 0;   // no mouse movement meanwhile\n"
+   "\t\t}\n",
+   "the Circle Pad walks (arrow keys) while the pad shows")
+rw(EV,
+   "\t\t// Button events\n\t\tdoJoyEvent(eventQueue, keysPressed, keysReleased, KEY_L,",
+   "\t\t// ultima-3ds pad: D-pad moves between the pad's buttons, A presses, B = Escape\n"
+   "\t\tif (osys->padTouch) {\n"
+   "\t\t\tconst u32 rep = hidKeysDownRepeat();\n"
+   "\t\t\tif (rep & KEY_DUP)    osys->padQueueNav(OSystem_3DS::kNavUp);\n"
+   "\t\t\tif (rep & KEY_DDOWN)  osys->padQueueNav(OSystem_3DS::kNavDown);\n"
+   "\t\t\tif (rep & KEY_DLEFT)  osys->padQueueNav(OSystem_3DS::kNavLeft);\n"
+   "\t\t\tif (rep & KEY_DRIGHT) osys->padQueueNav(OSystem_3DS::kNavRight);\n"
+   "\t\t\tif (keysPressed & KEY_A) osys->padQueueNav(OSystem_3DS::kNavA);\n"
+   "\t\t\tif (keysPressed & KEY_B) osys->padQueueNav(OSystem_3DS::kNavB);\n"
+   "\t\t\tkeysPressed &= ~(KEY_DUP | KEY_DDOWN | KEY_DLEFT | KEY_DRIGHT | KEY_A | KEY_B);\n"
+   "\t\t}\n\n"
+   "\t\t// Button events\n\t\tdoJoyEvent(eventQueue, keysPressed, keysReleased, KEY_L,",
+   "D-pad moves between the pad's buttons, A presses, B = Escape")
+rw(G,
+   "\t\t\tif (_cursorVisible && _showCursor && _screen == kScreenTop) {\n",
+   "\t\t\tif (_cursorVisible && _showCursor && _screen == kScreenTop && padMode != 1) { // ultima-3ds pad: no cursor\n",
+   "padMode != 1) { // ultima-3ds pad: no cursor")
+AU = "backends/platform/3ds/osystem-audio.cpp"
+rw(AU,
+   "\tconst int bufferCount = 2;\n",
+   "\tconst int bufferCount = 4; // ultima-3ds: more headroom (sound was choppy)\n",
+   "bufferCount = 4; // ultima-3ds")
+rw(AU,
+   "\t\tndspWaveBuf *buf = &buffers[bufferIndex];\n"
+   "\t\tif (buf->status == NDSP_WBUF_FREE || buf->status == NDSP_WBUF_DONE) {\n",
+   "\t\tfor (int fill = 0; fill < bufferCount; ++fill) { // ultima-3ds: refill every free buffer\n"
+   "\t\tndspWaveBuf *buf = &buffers[bufferIndex];\n"
+   "\t\tif (buf->status != NDSP_WBUF_FREE && buf->status != NDSP_WBUF_DONE)\n\t\t\tbreak;\n"
+   "\t\t{\n",
+   "refill every free buffer")
+rw(AU,
+   "\t\t\tbufferIndex++;\n\t\t\tbufferIndex %= bufferCount;\n\t\t}\n\t}\n",
+   "\t\t\tbufferIndex++;\n\t\t\tbufferIndex %= bufferCount;\n\t\t}\n\t\t} // ultima-3ds refill loop\n\t}\n",
+   "} // ultima-3ds refill loop")
+print("done")

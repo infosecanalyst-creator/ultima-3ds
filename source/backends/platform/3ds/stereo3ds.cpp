@@ -79,14 +79,25 @@ static void onDepthMap(const byte *depth, int w, int h, int pitch) {
 	s.fresh = true;
 }
 
-void stereo3dsInit() {
+// The right-eye target and 3D mode are only set up once an engine actually
+// pushes a depth map. The Ultima engines never do, so the 3D slider does
+// nothing at all for them (it used to crash: render-twice path with no depth).
+static void createRightTarget() {
+	if (s.targetRight)
+		return;
 	s.targetRight = C3D_RenderTargetCreate(240, 400, GPU_RB_RGB8, -1);
+	if (!s.targetRight)
+		return;
 	C3D_RenderTargetClear(s.targetRight, C3D_CLEAR_ALL, 0x00000000, 0);
 	C3D_RenderTargetSetOutput(s.targetRight, GFX_TOP, GFX_RIGHT,
 		GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) |
 		GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
 		GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
+	gfxSetWide(false);
 	gfxSet3D(true);
+}
+
+void stereo3dsInit() {
 	Stereo3DS::setDepthMap = onDepthMap;
 }
 
@@ -100,7 +111,7 @@ void stereo3dsShutdown() {
 	}
 	delete[] s.depth;
 	s.depth = nullptr;
-	gfxSet3D(false);
+	gfxSet3D(false);   // harmless when it was never turned on
 }
 
 void stereo3dsSetEnabled(bool on) { s.enabled = on; }
@@ -124,6 +135,8 @@ int stereo3dsEyes() {
 
 // Split the game texture into per-level RGBA layers.
 void stereo3dsPrepare(Sprite &game) {
+	if (s.haveDepth && s.enabled && !s.targetRight)
+		createRightTarget(); // first depth map: now 3D is worth turning on
 	if (!stereo3dsActive())
 		return;
 	const int w = game.actualWidth, h = game.actualHeight;

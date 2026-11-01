@@ -30,19 +30,27 @@ SELECT or SWAP puts the game on the touch screen, to tap it directly with the st
 ScummVM's menus and the launcher always use the touch screen.
 
 # Buttons
+## Game on top (normal)
+| Circle Pad | Walk (hold to keep walking)
+| D-pad | Move between the touch-screen buttons (a gold frame shows which)
+| A | Press the framed button
+| B | Escape / cancel
 | Touch | The buttons below the game
-| Circle Pad | Move the mouse cursor
-| A | Left click at the cursor
-| B | Right click
-| D-pad | Walk (both games)
 | X | Talk; confirm in menus
 | Y | Cancel / Escape
 | ZL | Attack
 | ZR | U4: Enter. U6: Use
 | L | ScummVM menu: save, load, quit
-| R | Drag / hover touch mode (game on the touch screen)
 | Select | Game on top / on the touch screen
 | Start | Open this manual
+There is no mouse cursor on the top screen; Ultima VI's cursor appears when the game asks you to pick a target, and moves with the D-pad or arrow buttons.
+
+## Game on the touch screen (SWAP)
+| Circle Pad | Move the mouse cursor
+| A | Left click at the cursor
+| B | Right click
+| D-pad | Walk
+| R | Drag / hover touch mode
 
 ## Touch modes
 With the game on the touch screen (SELECT): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.

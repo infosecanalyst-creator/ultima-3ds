@@ -116,6 +116,7 @@ struct State {
 	int flash = -1;             // index of the button drawn pressed
 	uint32_t flashUntil = 0;
 	uint32_t lastSerial = ~0u;  // info.serial the buttons were built for
+	int focus = -1;             // D-pad focus (index into buttons), -1 = none yet
 	std::vector<Button> buttons;
 };
 
@@ -382,6 +383,33 @@ inline void drawButton(Canvas &cv, const Button &bt, bool down) {
 	drawText(cv, bt.x + (bt.w - textWidth(l)) / 2 + press, bt.y + (bt.h - 13) / 2 + press, l, tc);
 }
 
+// D-pad: move the focus to the nearest button in that direction (the first
+// press picks the first button of the page, not the bottom row).
+inline void moveFocus(State &st, int dx, int dy) {
+	const int n = (int)st.buttons.size();
+	if (!n) return;
+	if (st.focus < 0 || st.focus >= n) {
+		st.focus = 0;
+		for (int i = 0; i < n; ++i)
+			if (!st.buttons[i].strip) { st.focus = i; break; }
+		return;
+	}
+	const Button &f = st.buttons[st.focus];
+	const int fx = f.x + f.w / 2, fy = f.y + f.h / 2;
+	int best = -1, bestScore = 1 << 30;
+	for (int i = 0; i < n; ++i) {
+		if (i == st.focus) continue;
+		const Button &b = st.buttons[i];
+		const int ex = b.x + b.w / 2 - fx, ey = b.y + b.h / 2 - fy;
+		const int along = ex * dx + ey * dy;
+		if (along <= 0) continue;                       // must lie that way
+		const int across = (ex * dy < 0 ? -ex * dy : ex * dy) + (ey * dx < 0 ? -ey * dx : ey * dx);
+		const int score = along + across * 3;
+		if (score < bestScore) { bestScore = score; best = i; }
+	}
+	if (best >= 0) st.focus = best;
+}
+
 inline void draw(Canvas &cv, const State &st, uint32_t now) {
 	using namespace Pad3DS;
 	cv.fill(0, 0, cv.w, cv.h, kBg);
@@ -395,6 +423,11 @@ inline void draw(Canvas &cv, const State &st, uint32_t now) {
 	}
 	for (size_t i = 0; i < st.buttons.size(); ++i)
 		drawButton(cv, st.buttons[i], (int)i == st.flash && now < st.flashUntil);
+	if (st.focus >= 0 && st.focus < (int)st.buttons.size()) {   // D-pad focus: gold frame
+		const Button &b = st.buttons[st.focus];
+		cv.frame(b.x - 1, b.y - 1, b.w + 2, b.h + 2, kGold);
+		cv.frame(b.x - 2, b.y - 2, b.w + 4, b.h + 4, kGold);
+	}
 }
 
 // The top screen while the game is on the touch screen: the automap 1.5x,
