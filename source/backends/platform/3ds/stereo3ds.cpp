@@ -143,6 +143,24 @@ void stereo3dsPrepare(Sprite &game) {
 	if (w != s.depthW || h != s.depthH)
 		return; // engine and backend disagree on size; leave stereo off this frame
 
+	// Each layer needs a linear-memory buffer; running out used to abort the
+	// whole app the moment the 3D slider went up. Stay flat instead.
+	static bool lowMemory = false;
+	if (lowMemory)
+		return;
+	{
+		size_t need = 0;
+		for (int l = 0; l < s.levelsUsed; ++l)
+			if (s.layers[l].actualWidth != w || s.layers[l].actualHeight != h || !s.layers[l].getPixels())
+				need += (size_t)Common::nextHigher2(w) * Common::nextHigher2(h) * 4 * 2; // pixels + texture (worst case)
+		if (need && linearSpaceFree() < need + (1u << 20)) {
+			warning("stereo3ds: not enough linear memory for 3D (%u free, %u needed); staying 2D",
+			        (unsigned)linearSpaceFree(), (unsigned)need);
+			lowMemory = true;
+			s.enabled = false;
+			return;
+		}
+	}
 	for (int l = 0; l < s.levelsUsed; ++l) {
 		Sprite &L = s.layers[l];
 		if (L.actualWidth != w || L.actualHeight != h || !L.getPixels())

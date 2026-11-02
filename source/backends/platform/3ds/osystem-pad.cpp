@@ -26,9 +26,10 @@
 
 namespace N3DS {
 
-static const GfxMode3DS kPadMode = { Graphics::PixelFormat(4, 8, 8, 8, 8, 24, 16, 8, 0), GPU_RGBA8,
+// 16-bit (RGB565): half the linear memory of RGBA8, which the 3D layers need.
+static const GfxMode3DS kPadMode = { Graphics::PixelFormat(2, 5, 6, 5, 0, 11, 5, 0, 0), GPU_RGB565,
 	(GX_TRANSFER_FLIP_VERT(1) | GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_RAW_COPY(0) |
-	 GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGBA8) |
+	 GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
 	 GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO)) };
 
 static PadUI::State s_pad;
@@ -47,10 +48,10 @@ static int s_ntaps = 0;
 
 static void canvasToSprite(const PadUI::Canvas &cv, Sprite *s) {
 	for (int y = 0; y < cv.h; ++y) {
-		uint32 *row = (uint32 *)s->getBasePtr(0, y);
+		uint16 *row = (uint16 *)s->getBasePtr(0, y);
 		const uint8_t *src = cv.px + y * cv.w * 3;
 		for (int x = 0; x < cv.w; ++x, src += 3)
-			row[x] = ((uint32)src[0] << 24) | ((uint32)src[1] << 16) | ((uint32)src[2] << 8) | 0xFF;
+			row[x] = (uint16)(((src[0] & 0xF8) << 8) | ((src[1] & 0xFC) << 3) | (src[2] >> 3));
 	}
 	s->markDirty();
 }
