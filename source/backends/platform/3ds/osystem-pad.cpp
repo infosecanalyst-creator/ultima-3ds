@@ -211,6 +211,24 @@ static Common::KeyState keyFor(const PadUI::Action &a) {
 
 void OSystem_3DS::padSendKey(const Common::KeyState &ks) {
 	Common::Event e;
+	// Arrows go as the D-pad's joystick buttons: the 3DS backend declares no
+	// keyboard, so the keymapper drops arrow keys before the games see them.
+	int joy = -1;
+	switch (ks.keycode) {
+	case Common::KEYCODE_UP:    joy = Common::JOYSTICK_BUTTON_DPAD_UP; break;
+	case Common::KEYCODE_DOWN:  joy = Common::JOYSTICK_BUTTON_DPAD_DOWN; break;
+	case Common::KEYCODE_LEFT:  joy = Common::JOYSTICK_BUTTON_DPAD_LEFT; break;
+	case Common::KEYCODE_RIGHT: joy = Common::JOYSTICK_BUTTON_DPAD_RIGHT; break;
+	default: break;
+	}
+	if (joy >= 0) {
+		e.type = Common::EVENT_JOYBUTTON_DOWN;
+		e.joystick.button = joy;
+		pushPadEvent(e);
+		e.type = Common::EVENT_JOYBUTTON_UP;
+		pushPadEvent(e);
+		return;
+	}
 	e.type = Common::EVENT_KEYDOWN;
 	e.kbd = ks;
 	pushPadEvent(e);
