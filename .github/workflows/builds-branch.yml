@@ -19,7 +19,8 @@ jobs:
           git config --global --add safe.directory '*'
       - uses: actions/checkout@v4
       - name: 3DS libraries
-        run: dkp-pacman -Sy --noconfirm 3ds-dev dkp-toolchain-vars 3ds-zlib 3ds-libpng 3ds-libjpeg-turbo 3ds-freetype 3ds-libmad 3ds-libogg 3ds-libvorbisidec 3ds-flac 3ds-libtheora 3ds-curl
+        run: dkp-pacman -Sy --noconfirm 3ds-dev dkp-toolchain-vars 3ds-zlib 3ds-libpng 3ds-libjpeg-turbo 3ds-freetype 3ds-libmad 3ds-libogg 3ds-libvorbisidec 3ds-flac 3ds-libtheora 3ds-curl 2>&1 | tee libs.log; test ${PIPESTATUS[0]} -eq 0
+        shell: bash
       - name: Build
         run: bash ./build-3ds.sh 2>&1 | tee build.log; test -f out/3ds/scummvm/scummvm.3dsx
       - name: Collect
@@ -27,7 +28,7 @@ jobs:
         run: |
           mkdir -p out
           cp out/3ds/scummvm/scummvm.3dsx out/ 2>/dev/null || true
-          cp build.log build-3ds.log out/ 2>/dev/null || true
+          cp libs.log build.log build-3ds.log out/ 2>/dev/null || true
           echo "$GITHUB_SHA" > out/SOURCE_COMMIT
       - name: Publish to builds branch
         if: always()
