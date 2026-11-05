@@ -1,0 +1,39 @@
+name: build-3dsx
+# Builds the 3DS binary and publishes it to the `builds` branch (3dsx + logs + SOURCE_COMMIT)
+# so it can be fetched without a local PC build.
+on:
+  push:
+    branches: ["**", "!builds"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    steps:
+      - name: Tools
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq git python3 pkg-config build-essential ca-certificates >/dev/null
+          git config --global --add safe.directory '*'
+      - uses: actions/checkout@v4
+      - name: 3DS libraries
+        run: dkp-pacman -Sy --noconfirm 3ds-dev dkp-toolchain-vars 3ds-zlib 3ds-libpng 3ds-libjpeg-turbo 3ds-freetype 3ds-libmad 3ds-libogg 3ds-libvorbisidec 3ds-flac 3ds-libtheora 3ds-curl
+      - name: Build
+        run: bash ./build-3ds.sh 2>&1 | tee build.log; test -f out/3ds/scummvm/scummvm.3dsx
+      - name: Collect
+        if: always()
+        run: |
+          mkdir -p out
+          cp out/3ds/scummvm/scummvm.3dsx out/ 2>/dev/null || true
+          cp build.log build-3ds.log out/ 2>/dev/null || true
+          echo "$GITHUB_SHA" > out/SOURCE_COMMIT
+      - name: Publish to builds branch
+        if: always()
+        run: |
+          cd out
+          git init -q -b builds
+          git config user.name "build-bot"; git config user.email "build-bot@users.noreply.github.com"
+          git add -A; git commit -qm "build of ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" builds
