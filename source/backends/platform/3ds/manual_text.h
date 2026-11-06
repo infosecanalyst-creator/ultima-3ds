@@ -24,8 +24,8 @@ The game, filling the screen.
 - Bottom row: ESC, YES, NO, ENTER, TYPE (the 3DS keyboard), SWAP and BOOK (this manual).
 Every tap clicks.
 
-## SWAP (SELECT)
-SELECT or SWAP puts the game on the touch screen, to tap it directly with the stylus (Ultima VI inventories, for example). The top screen then shows a bigger map. SELECT again brings the game back to the top screen.
+## SWAP (ZL)
+ZL or SWAP puts the game on the touch screen, to tap it directly with the stylus (Ultima VI inventories, for example). The top screen then shows a bigger map. ZL again brings the game back to the top screen.
 
 ScummVM's menus and the launcher always use the touch screen.
 
@@ -38,10 +38,10 @@ ScummVM's menus and the launcher always use the touch screen.
 | Touch | The buttons below the game
 | X | Talk; confirm in menus
 | Y | Cancel / Escape
-| ZL | Attack
+| ZL | Swap the screens (game on top / on the touch screen)
 | ZR | U4: Enter. U6: Use
 | L | ScummVM menu: save, load, quit
-| Select | Game on top / on the touch screen
+| Select | Attack
 | Start | Open this manual
 There is no mouse cursor on the top screen; Ultima VI's cursor appears when the game asks you to pick a target, and moves with the D-pad or arrow buttons.
 
@@ -53,7 +53,7 @@ There is no mouse cursor on the top screen; Ultima VI's cursor appears when the 
 | R | Drag / hover touch mode
 
 ## Touch modes
-With the game on the touch screen (SELECT): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.
+With the game on the touch screen (ZL): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.
 
 # Launcher and saving
 ## Starting a game
@@ -102,7 +102,7 @@ A gypsy asks you questions of virtue. Answer honestly: your answers choose your 
 # Ultima IV: commands
 Each command is a button on the touch screen; More... shows all of them. The buttons in brackets work too.
 
-| A (ZL) | Attack, then a direction
+| A (Select) | Attack, then a direction
 | B | Board a horse or ship
 | C | Cast a spell
 | D | Descend a ladder
@@ -153,13 +153,13 @@ At the title, choose Create Character for a new game; a gypsy's questions set yo
 Ultima VI is played with the mouse.
 
 ## The command bar
-The touch screen has the commands: Talk, Look, Get, Use, Move, Drop, Attack, Cast, Rest, Combat and Party view; More... has save, load, party mode and the rest. After a command, pick who or what it is for with the D-pad (or the arrow buttons) and press A or Select. With the game on the touch screen (SELECT) the icons along the bottom of the game work with the stylus too.
+The touch screen has the commands: Talk, Look, Get, Use, Move, Drop, Attack, Cast, Rest, Combat and Party view; More... has save, load, party mode and the rest. After a command, pick who or what it is for with the D-pad (or the arrow buttons) and press A or Select. With the game on the touch screen (ZL) the icons along the bottom of the game work with the stylus too.
 
 ## Moving
 Walk with the D-pad. Doors, ladders and objects are used with Use (ZR) or the Use icon.
 
 ## Inventory
-Tap Inventory (under the map). To drag items between hands, body and backpack, press SELECT to put the game on the touch screen and use the stylus.
+Tap Inventory (under the map). To drag items between hands, body and backpack, press ZL to put the game on the touch screen and use the stylus.
 
 ## Talking
 Press X or Talk, pick the person with the D-pad and press A, then tap the words on the touch screen. NAME, JOB and BYE always work; the highlighted words they use appear as buttons.
@@ -176,7 +176,7 @@ Y (Escape) opens Ultima VI's own menu: save, load, settings. The ScummVM menu (L
 
 # Troubleshooting
 - Game not listed: Add Game in the launcher and choose the ULTIMA4 or ULTIMA6 folder.
-- Game on the wrong screen: press SELECT.
+- Game on the wrong screen: press ZL.
 - Taps not clicking with the game on the touch screen: press R to return to drag mode.
 - Buttons do the wrong thing: in Options, Keymaps, reset the Ultima keymaps to their defaults.
 - No depth: push the 3D slider up; menus are flat on purpose.

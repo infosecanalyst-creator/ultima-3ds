@@ -85,10 +85,11 @@ replaces it without rebuilding.
 | D-pad | walk (Ultima IV and VI) |
 | X | talk (U4 menus: confirm) |
 | Y | cancel / Escape (U6: game menu) |
-| ZL / ZR | attack / U4 enter, U6 use |
+| ZL | swap the screens (game on top / on the touch screen) |
+| ZR | U4 enter, U6 use |
+| Select | attack |
 | L | ScummVM menu (save, load, quit) — moved here from Start |
 | R | drag / hover touch mode |
-| Select | on-screen keyboard |
 | Start | instruction manual |
 
 ## Build

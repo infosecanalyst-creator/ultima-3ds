@@ -428,7 +428,7 @@ if "JOY_UP" not in t:
                      ("ESCAPE", "JOY_Y")):
         t = re.sub(r'(\{ KEYBIND_%s, "%s", [^\n]*?), nullptr \}' % (act, act), r'\1, "%s" }' % joy, t)
     t = t.replace('"talk", "t", nullptr }', '"talk", "t", "JOY_X" }', 1)
-    t = t.replace('"attack", "a", nullptr }', '"attack", "a", "JOY_LEFT_STICK" }', 1)
+    t = t.replace('"attack", "a", nullptr }', '"attack", "a", "JOY_BACK" }', 1)
     t = t.replace('"enter", "e", nullptr }', '"enter", "e", "JOY_RIGHT_STICK" }', 1)
     # menus: X confirms (Talk is not in the menu keymap)
     t = t.replace('static const KeybindingRecord MENU_KEYS[] = {\n\t{ KEYBIND_INTERACT, "INTERACT", _s("Interact"), "interact", "RETURN", nullptr },',
@@ -452,8 +452,8 @@ rw(U6,
    '"JOY_X" }, // 3DS')
 rw(U6,
    '\t{ "ATTACK", _s("Attack"), "a", nullptr },\n',
-   '\t{ "ATTACK", _s("Attack"), "a", "JOY_LEFT_STICK" }, // 3DS ZL\n',
-   '"JOY_LEFT_STICK" }, // 3DS ZL')
+   '\t{ "ATTACK", _s("Attack"), "a", "JOY_BACK" }, // 3DS Select\n',
+   '"JOY_BACK" }, // 3DS Select')
 rw(U6,
    '\t{ "USE", _s("Use"), "u", nullptr },\n',
    '\t{ "USE", _s("Use"), "u", "JOY_RIGHT_STICK" }, // 3DS ZR\n',
@@ -636,15 +636,15 @@ rw(EV,
 rw(EV,
    "\tact->addDefaultInputMapping(\"JOY_START\");\n\tkeymap->addAction(act);\n",
    "\tact->addDefaultInputMapping(\"JOY_START\");\n\tkeymap->addAction(act);\n\n"
-   "\t// ultima-3ds pad: SELECT moves the game between the two screens\n"
+   "\t// ultima-3ds pad: ZL moves the game between the two screens\n"
    "\tact = new Action(\"SWAP\", _(\"Game on top / touch screen\"));\n"
    "\tact->setCustomBackendActionEvent(k3DSEventSwap);\n"
-   "\tact->addDefaultInputMapping(\"JOY_BACK\");\n\tkeymap->addAction(act);\n",
+   "\tact->addDefaultInputMapping(\"JOY_LEFT_STICK\"); // 3DS ZL\n\tkeymap->addAction(act);\n",
    "new Action(\"SWAP\"")
 rw(EV,
    "\tkeymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, \"MENU\", \"JOY_LEFT_SHOULDER\");\n",
    "\tkeymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, \"MENU\", \"JOY_LEFT_SHOULDER\");\n"
-   "\t// SELECT swaps screens (ultima-3ds pad); the pad's TYPE button opens the keyboard\n"
+   "\t// ZL swaps screens (ultima-3ds pad); the pad's TYPE button opens the keyboard\n"
    "\tkeymapperDefaultBindings->setDefaultBinding(Common::kGlobalKeymapName, \"VIRT\", \"C+F7\");\n",
    "\"VIRT\", \"C+F7\"")
 rw(EV,
