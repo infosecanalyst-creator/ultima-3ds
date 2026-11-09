@@ -53,6 +53,9 @@ There is no mouse cursor on the top screen; Ultima VI's cursor appears when the 
 ## Touch modes
 With the game on the touch screen (ZL): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.
 
+## Left-handed play
+Start, then the "Left hand" button at the bottom of the touch screen, swaps the D-pad with the face buttons: Y/Up, A/Right, B/Down, X/Left. It is saved and applies everywhere, including this manual.
+
 # Launcher and saving
 ## Starting a game
 1. In the ScummVM launcher, tap a game, then Start.

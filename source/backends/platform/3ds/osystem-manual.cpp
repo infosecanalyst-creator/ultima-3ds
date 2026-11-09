@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <vector>
 #include "backends/platform/3ds/manual3ds.h"
 #include "backends/platform/3ds/click3ds.h"
@@ -21,6 +23,46 @@
 #include "backends/platform/3ds/stereo3ds.h"
 
 namespace N3DS {
+
+// Left-handed play: the D-pad and the face buttons swap places
+// (Y<->Up, A<->Right, B<->Down, X<->Left). Toggled from the manual's bottom
+// screen, kept as a marker file, applied where the events read the buttons.
+static const char *kLeftyFile = "sdmc:/3ds/scummvm/.lefty";
+static bool g_lefty = false, g_leftyLoaded = false;
+
+static bool leftyOn() {
+	if (!g_leftyLoaded) {
+		struct stat sb;
+		g_lefty = stat(kLeftyFile, &sb) == 0;
+		g_leftyLoaded = true;
+	}
+	return g_lefty;
+}
+
+static void setLefty(bool on) {
+	g_lefty = on;
+	g_leftyLoaded = true;
+	if (on) {
+		if (FILE *f = fopen(kLeftyFile, "w"))
+			fclose(f);
+	} else {
+		remove(kLeftyFile);
+	}
+}
+
+u32 ultimaLefty(u32 m) {
+	static const u32 pr[4][2] = { { KEY_Y, KEY_DUP }, { KEY_A, KEY_DRIGHT },
+		{ KEY_B, KEY_DDOWN }, { KEY_X, KEY_DLEFT } };
+	if (!leftyOn())
+		return m;
+	u32 o = m;
+	for (int i = 0; i < 4; ++i) {
+		o &= ~(pr[i][0] | pr[i][1]);
+		if (m & pr[i][0]) o |= pr[i][1];
+		if (m & pr[i][1]) o |= pr[i][0];
+	}
+	return o;
+}
 
 static manual3ds::Manual *g_manual = nullptr;
 static Sprite *g_manualTop = nullptr, *g_manualBottom = nullptr;   // kept for the session
@@ -76,7 +118,7 @@ void OSystem_3DS::runManual() {
 			continue;
 		}
 		hidScanInput();
-		const u32 down = hidKeysDown(), rep = hidKeysDownRepeat();
+		const u32 down = ultimaLefty(hidKeysDown()), rep = ultimaLefty(hidKeysDownRepeat());
 		manual3ds::Input mi;
 		static const struct { u32 b; uint32_t k; bool rep; } map[] = {
 			{ KEY_DUP, manual3ds::K_UP, true }, { KEY_DDOWN, manual3ds::K_DOWN, true },
@@ -100,9 +142,14 @@ void OSystem_3DS::runManual() {
 		hidCircleRead(&cp);
 		mi.cpad_y = cp.dy;
 
+		g_manual->set_toggle(leftyOn() ? "Left hand: on" : "Left hand: off");
 		const bool wasDirty = g_manual->dirty();
 		if (!g_manual->update(mi))
 			break;
+		if (g_manual->take_toggle()) {
+			setLefty(!leftyOn());
+			redraw = true;
+		}
 		if (g_manual->take_click())
 			click3ds::play();               // standard: every tap clicks
 		if (!(redraw || mi.down || mi.touch_down || wasDirty || g_manual->dirty())) {

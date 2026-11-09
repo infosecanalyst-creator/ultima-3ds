@@ -722,10 +722,19 @@ rw(EV,
    "\t\t}\n",
    "the Circle Pad walks (arrow keys) while the pad shows")
 rw(EV,
+   "\t\tu32 held = hidKeysHeld();\n\t\tu32 keysPressed = hidKeysDown();\n\t\tu32 keysReleased = hidKeysUp();\n",
+   "\t\tu32 held = ultimaLefty(hidKeysHeld()); // left-handed play: D-pad <-> face buttons\n"
+   "\t\tu32 keysPressed = ultimaLefty(hidKeysDown());\n\t\tu32 keysReleased = ultimaLefty(hidKeysUp());\n",
+   "ultimaLefty(hidKeysHeld())")
+rw(EV,
+   "static void doJoyEvent(",
+   "u32 ultimaLefty(u32 m); // osystem-manual.cpp\n\nstatic void doJoyEvent(",
+   "u32 ultimaLefty(u32 m);")
+rw(EV,
    "\t\t// Button events\n\t\tdoJoyEvent(eventQueue, keysPressed, keysReleased, KEY_L,",
    "\t\t// ultima-3ds pad: D-pad moves between the pad's buttons, A presses, B = Escape\n"
    "\t\tif (osys->padTouch) {\n"
-   "\t\t\tconst u32 rep = hidKeysDownRepeat();\n"
+   "\t\t\tconst u32 rep = ultimaLefty(hidKeysDownRepeat());\n"
    "\t\t\tif (rep & KEY_DUP)    osys->padQueueNav(OSystem_3DS::kNavUp);\n"
    "\t\t\tif (rep & KEY_DDOWN)  osys->padQueueNav(OSystem_3DS::kNavDown);\n"
    "\t\t\tif (rep & KEY_DLEFT)  osys->padQueueNav(OSystem_3DS::kNavLeft);\n"
