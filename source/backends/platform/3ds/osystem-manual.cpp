@@ -143,6 +143,7 @@ void OSystem_3DS::runManual() {
 		mi.cpad_y = cp.dy;
 
 		g_manual->set_toggle(leftyOn() ? "Left hand: on" : "Left hand: off");
+		g_manual->set_footer(leftyOn() ? "Stick: scroll   A/B/X/Y: section   D-Down: close" : "");
 		const bool wasDirty = g_manual->dirty();
 		if (!g_manual->update(mi))
 			break;
