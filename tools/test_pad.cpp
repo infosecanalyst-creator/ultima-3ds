@@ -30,6 +30,19 @@ static void page(const char *dir, const char *name, bool more = false, int flash
 	save(dir, name, cv);
 	for (auto &b : st.buttons)
 		if (b.x < 0 || b.y < 0 || b.x + b.w > 320 || b.y + b.h > 240) printf("OFFSCREEN %s: %s\n", name, b.label.c_str());
+	// rule 11: 24 px buttons, 6 px from the edges, 4 px apart
+	for (size_t i = 0; i < st.buttons.size(); ++i) {
+		const auto &b = st.buttons[i];
+		if (b.w < 24 || b.h < 24 || b.x < 6 || b.y < 6 || b.x + b.w > 314 || b.y + b.h > 234) {
+			printf("RULE11 %s: %s (%d,%d %dx%d)\n", name, b.label.c_str(), b.x, b.y, b.w, b.h); ++g_bad;
+		}
+		for (size_t j = i + 1; j < st.buttons.size(); ++j) {
+			const auto &c = st.buttons[j];
+			if (b.x < c.x + c.w + 4 && c.x < b.x + b.w + 4 && b.y < c.y + c.h + 4 && c.y < b.y + b.h + 4) {
+				printf("RULE11 gap %s: %s / %s\n", name, b.label.c_str(), c.label.c_str()); ++g_bad;
+			}
+		}
+	}
 	// D-pad: every button must be reachable from the first focus
 	const int n = (int)st.buttons.size();
 	std::vector<bool> seen(n, false);

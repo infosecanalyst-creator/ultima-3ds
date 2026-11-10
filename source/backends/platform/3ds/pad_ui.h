@@ -122,8 +122,10 @@ struct State {
 
 // Areas
 static const int kMapX = 6, kMapY = 6;                     // map picture (kMap x kMap)
-static const int kColX = 158, kColW = 158, kTopY = 4, kTopH = 194;
-static const int kStripY = 203, kStripH = 34;
+// Rule 11: buttons >= 24 px, >= 4 px apart, >= 6 px from the screen edges.
+static const int kColX = 162, kColW = 152, kTopY = 6, kTopH = 190;   // pages: y 6..196
+static const int kStripY = 200, kStripH = 34;                         // strip: y 200..234
+static const int kFullX = 6, kFullW = 308;
 
 inline std::string cap(const std::string &w) {
 	if (w == "heal") return "Health";
@@ -134,7 +136,7 @@ inline std::string cap(const std::string &w) {
 
 // Lay `items` out in a grid inside (x, y, w, h).
 inline void grid(std::vector<Button> &out, int x, int y, int w, int h, int cols,
-                 const std::vector<std::pair<std::string, Action> > &items, int rows = 0, int gap = 3) {
+                 const std::vector<std::pair<std::string, Action> > &items, int rows = 0, int gap = 4) {
 	if (items.empty()) return;
 	if (!rows) rows = ((int)items.size() + cols - 1) / cols;
 	const int bw = (w - gap * (cols - 1)) / cols;
@@ -188,9 +190,9 @@ inline void u6More(Items &it) {
 	       { "Cursor", named(kTab) }, { "Inventory", key('i') }, { "Back", special(kBack) } };
 }
 inline void arrows(std::vector<Button> &out, int x, int y, int w, int h, const char *okLabel, const Action &ok) {
-	const int bw = (w - 6) / 3, bh = (h - 9) / 4 > 40 ? 40 : (h - 9) / 4;
+	const int bw = (w - 8) / 3, bh = (h - 12) / 4 > 40 ? 40 : (h - 12) / 4;
 	auto add = [&](int c, int r, const char *l, const Action &a) {
-		Button b = { x + c * (bw + 3), y + r * (bh + 3), bw, bh, l, a, false };
+		Button b = { x + c * (bw + 4), y + r * (bh + 4), bw, bh, l, a, false };
 		out.push_back(b);
 	};
 	add(1, 0, "North", named(kUp));
@@ -198,7 +200,7 @@ inline void arrows(std::vector<Button> &out, int x, int y, int w, int h, const c
 	add(2, 1, "East", named(kRight));
 	add(1, 2, "South", named(kDown));
 	if (okLabel) add(1, 1, okLabel, ok);
-	Button c = { x, y + 3 * (bh + 3), w, bh, "Cancel", named(kEscape), false };
+	Button c = { x, y + 3 * (bh + 4), w, bh, "Cancel", named(kEscape), false };
 	out.push_back(c);
 }
 inline void numberPad(Items &it) {
@@ -223,14 +225,14 @@ inline void build(State &st) {
 	static const char *const sl[7] = { "ESC", "YES", "NO", "ENTER", "TYPE", "SWAP", "BOOK" };
 	const Action sa[7] = { named(kEscape), key('y'), key('n'), named(kReturn), special(kType),
 	                       special(kSwap), special(kBook) };
-	const int sw = (320 - 2 * 8) / 7;
+	const int sw = (kFullW - 6 * 4) / 7;   // 40
 	for (int i = 0; i < 7; ++i) {
-		Button s = { 2 + i * (sw + 2), kStripY, sw, kStripH, sl[i], sa[i], true };
+		Button s = { kFullX + i * (sw + 4), kStripY, sw, kStripH, sl[i], sa[i], true };
 		b.push_back(s);
 	}
 
 	const bool map = hasMap();
-	const int ax = map ? kColX : 4, aw = map ? kColW : 312;
+	const int ax = map ? kColX : kFullX, aw = map ? kColW : kFullW;
 	Items it;
 	const bool u4 = in.game == kUltima4, u6 = in.game == kUltima6;
 
@@ -239,12 +241,12 @@ inline void build(State &st) {
 		Items sm;
 		if (u4) sm = { { "Pass", named(kSpace) }, { "Ztats", key('z') } };
 		else sm = { { "Inventory", key('i') }, { "Cancel", named(kSpace) } };
-		grid(b, 4, 170, 150, 28, 2, sm);
+		grid(b, kFullX, 168, 144, 26, 2, sm);   // under the 144-px map (y 6..150) and its place name
 	}
 
 	if (st.more && (in.input == kCommand || in.input == kCombat)) {
 		if (u4) u4More(it); else u6More(it);
-		grid(b, 4, kTopY, 312, kTopH, 4, it);
+		grid(b, kFullX, kTopY, kFullW, kTopH, 5, it);   // 27 items: 5 x 6 rows of 28 px
 		return;
 	}
 	st.more = false;
@@ -266,7 +268,7 @@ inline void build(State &st) {
 		break;
 	case kSpell:
 		u4Spells(it);
-		grid(b, 4, kTopY, 312, kTopH, 4, it);
+		grid(b, kFullX, kTopY, kFullW, kTopH, 5, it);
 		break;
 	case kIntro:
 		if (u6) {
@@ -274,7 +276,7 @@ inline void build(State &st) {
 			       { "Create a Character", key('c') }, { "Skip", named(kEscape) },
 			       { "Transfer a Character", key('t') }, { "A", key('a') },
 			       { "Introduction", key('i') }, { "B", key('b') } };
-			grid(b, 4, kTopY, 312, 160, 2, it);
+			grid(b, kFullX, kTopY, kFullW, 160, 2, it);
 		} else {
 			it = { { "Journey Onward", key('j') }, { "New Game", key('i') }, { "Return to View", key('r') },
 			       { "Configure", key('c') }, { "About", key('a') }, { "Continue", named(kSpace) } };
@@ -285,7 +287,8 @@ inline void build(State &st) {
 		for (int i = 0; i < in.nparty; ++i)
 			{ char l[24]; snprintf(l, sizeof(l), "%d %s", i + 1, in.party[i]); it.push_back({ l, key((char)('1' + i)) }); }
 		it.push_back({ "Cancel", named(kEscape) });
-		grid(b, ax, kTopY, aw, kTopH, 1, it, it.size() < 6 ? 6 : 0);
+		if (it.size() > 6) grid(b, ax, kTopY, aw, kTopH, 2, it);   // a big party: two columns keep rows >= 24 px
+		else grid(b, ax, kTopY, aw, kTopH, 1, it, 6);
 		break;
 	case kNumber:
 		numberPad(it);
