@@ -364,6 +364,11 @@ rw("backends/platform/3ds/options.cpp",
    'ConfMan.registerDefault("3ds_screen", kScreenBoth);',
    'ConfMan.registerDefault("3ds_screen", kScreenBottom); // 3DS port: game on the touch screen only',
    "game on the touch screen only")
+# UI rule 8: the game fills its screen (top 400x240, touch 320x240), no side bars.
+rw("backends/platform/3ds/options.cpp",
+   'ConfMan.registerDefault("3ds_stretchtofit", false);',
+   'ConfMan.registerDefault("3ds_stretchtofit", true); // 3DS port: fill the screen (UI rule 8)',
+   "fill the screen (UI rule 8)")
 
 
 # ------------------------------------------------------- in-game manual (Start)
