@@ -459,6 +459,28 @@ inline void drawDashboard(Canvas &cv) {
 	}
 }
 
+// Top screen while ScummVM's own screens (launcher, options, the game menu) are
+// on the touch screen: a short card instead of a dark screen (both screens
+// always in use).
+inline void drawLauncherCard(Canvas &cv) {
+	cv.fill(0, 0, cv.w, cv.h, kBg);
+	cv.fill(0, 0, cv.w, 22, kFace);
+	drawText(cv, 8, 5, "ULTIMA IV AND VI FOR NEW 3DS", kGold);
+	static const char *const lines[] = {
+		"Tap a game on the touch screen, then Start.",
+		"",
+		"New game: Add Game, then pick the ULTIMA4",
+		"or ULTIMA6 folder on the SD card.",
+		"",
+		"START: manual",
+		"In a game: ZL swaps the screens.",
+	};
+	for (int i = 0; i < 7; ++i) {
+		if (textWidth(lines[i]) > cv.w - 16) cutLabels().push_back(lines[i]);
+		drawText(cv, 8, 36 + i * 16, lines[i], kGrey, false);
+	}
+}
+
 inline int hit(const State &st, int x, int y) {
 	for (size_t i = 0; i < st.buttons.size(); ++i) {
 		const Button &b = st.buttons[i];

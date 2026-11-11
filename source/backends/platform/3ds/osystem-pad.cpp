@@ -86,8 +86,15 @@ void OSystem_3DS::padUpdateLayout() {
 	}
 }
 
+// Launcher and other ScummVM screens on the touch screen: card on top.
+static bool s_cardShown = false;
+static bool launcherCard(int padMode, int screen) {
+	return padMode == 0 && screen == (int)kScreenBottom;
+}
+
 void OSystem_3DS::padPrepare() {
-	if (!padMode)
+	const bool card = launcherCard(padMode, (int)_screen) && !manualOpen;
+	if (!padMode && !card)
 		return;
 	if (!s_bottomSprite) {
 		s_bottomSprite = new Sprite;
@@ -123,6 +130,14 @@ void OSystem_3DS::padPrepare() {
 		PadUI::draw(cv, s_pad, now);
 		canvasToSprite(cv, s_bottomSprite);
 	}
+	if (card && (!s_cardShown || s_topDirty)) {
+		s_topDirty = false;
+		s_cardShown = true;
+		PadUI::Canvas cv = { 400, 240, s_topPx };
+		PadUI::drawLauncherCard(cv);
+		canvasToSprite(cv, s_topSprite);
+	}
+	if (!card) s_cardShown = false;
 	if (padMode == 2 && s_topDirty) {
 		s_topDirty = false;
 		PadUI::Canvas cv = { 400, 240, s_topPx };
@@ -142,7 +157,7 @@ void OSystem_3DS::padRenderBottom() {
 }
 
 void OSystem_3DS::padRenderTop() {
-	if (padMode != 2 || !s_topSprite)
+	if (!s_topSprite || !(padMode == 2 || (launcherCard(padMode, (int)_screen) && !manualOpen)))
 		return;
 	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionTop);
 	C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, s_topSprite->getMatrix());

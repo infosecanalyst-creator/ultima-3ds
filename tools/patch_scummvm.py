@@ -606,7 +606,7 @@ rw(G,
 rw("backends/platform/3ds/osystem.cpp",
    "void OSystem_3DS::updateBacklight() {\n",
    "void OSystem_3DS::updateBacklight() {\n"
-   "\tif (padMode) { // ultima-3ds pad: both screens in use\n"
+   "\tif (padMode || _screen == kScreenBottom) { // ultima-3ds pad: both screens in use (launcher card on top)\n"
    "\t\tif (R_SUCCEEDED(gspLcdInit())) {\n\t\t\tGSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTH);\n\t\t\tgspLcdExit();\n\t\t}\n"
    "\t\treturn;\n\t}\n",
    "ultima-3ds pad: both screens in use")
