@@ -60,7 +60,7 @@ Start, then the "Left hand" button at the bottom of the touch screen, swaps the 
 ## Starting a game
 1. In the ScummVM launcher, tap a game, then Start.
 2. To add a game, tap Add Game and pick the ULTIMA4 or ULTIMA6 folder on the SD card.
-3. Game Options lets you change settings for one game.
+3. Game Opts lets you change settings for one game.
 
 ## The ScummVM menu (L)
 - Resume: back to the game.

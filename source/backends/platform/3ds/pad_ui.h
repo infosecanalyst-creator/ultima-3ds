@@ -468,16 +468,24 @@ inline void drawLauncherCard(Canvas &cv) {
 	drawText(cv, 8, 5, "ULTIMA IV AND VI FOR NEW 3DS", kGold);
 	static const char *const lines[] = {
 		"Tap a game on the touch screen, then Start.",
-		"",
 		"New game: Add Game, then pick the ULTIMA4",
 		"or ULTIMA6 folder on the SD card.",
 		"",
-		"START: manual",
-		"In a game: ZL swaps the screens.",
+		"*IN A GAME",
+		"Circle Pad: walk     D-pad + A: touch buttons",
+		"X: talk     Y / B: cancel     Select: attack",
+		"ZR: U4 Enter, U6 Use     L: save, load, quit",
+		"ZL: swap the screens",
+		"",
+		"START: manual (works here too)",
 	};
-	for (int i = 0; i < 7; ++i) {
-		if (textWidth(lines[i]) > cv.w - 16) cutLabels().push_back(lines[i]);
-		drawText(cv, 8, 36 + i * 16, lines[i], kGrey, false);
+	// 11 lines, 18 px apart: the card reaches the bottom of the screen (fill rule).
+	for (int i = 0; i < 11; ++i) {
+		const char *t = lines[i];
+		const bool head = t[0] == '*';
+		if (head) ++t;
+		if (textWidth(t) > cv.w - 16) cutLabels().push_back(t);
+		drawText(cv, 8, 34 + i * 18, t, head ? kGold : kGrey, false);
 	}
 }
 
