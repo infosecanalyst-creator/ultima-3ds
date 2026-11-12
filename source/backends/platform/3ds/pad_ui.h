@@ -478,10 +478,12 @@ inline void drawDashboard(Canvas &cv) {
 	std::string place = info.place;
 	if ((int)place.size() > cols) { cutLabels().push_back(place); place.resize(cols); }
 	drawText(cv, rx, oy + 4, place, kGold);
-	static const char *const hint[] = { "ZL puts the", "game back on the", "top screen with", "the buttons", "below." };
-	for (int i = 0; i < 5; ++i) {
+	// The controls for the game on the touch screen, down to the bottom (fill rule).
+	static const char *const hint[] = { "ZL: game back on", "top, buttons below", "", "Circle Pad: cursor", "A: left click",
+		"B: right click", "D-pad: walk", "R: drag / hover", "START: manual" };
+	for (int i = 0; i < 9; ++i) {
 		if ((int)strlen(hint[i]) > cols) cutLabels().push_back(hint[i]);
-		drawText(cv, rx, oy + 40 + i * 15, hint[i], kGrey, false);
+		drawText(cv, rx, oy + 30 + i * 20, hint[i], i < 2 ? kWhite : kGrey, false);
 	}
 }
 
