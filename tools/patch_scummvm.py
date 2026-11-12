@@ -790,3 +790,37 @@ rw("gui/launcher.cpp",
    '_c("~A~dd Game", "lowres") /* ultima-3ds: clear of the arrow */',
    'ultima-3ds: clear of the arrow */')
 print("done")
+
+# ------------- ZL / START while a game has switched the keymapper off
+# Ultima VI turns the keymapper off during its scripted scenes (intro, title
+# menu, cutscenes) and while typing, so the SWAP and MANUAL actions never fired
+# (test suite, scummvm-20261112-090829). Send the same backend actions directly.
+rw(EV,
+   "\t\tdoJoyEvent(eventQueue, keysPressed, keysReleased, KEY_ZR,     Common::JOYSTICK_BUTTON_RIGHT_STICK);\n",
+   "\t\tdoJoyEvent(eventQueue, keysPressed, keysReleased, KEY_ZR,     Common::JOYSTICK_BUTTON_RIGHT_STICK);\n"
+   "\t\t{ // ultima-3ds: ZL / START also work when the game has the keymapper off\n"
+   "\t\t\tCommon::Keymapper *km = g_system->getEventManager() ? g_system->getEventManager()->getKeymapper() : nullptr;\n"
+   "\t\t\tif (km && !km->isEnabled()) {\n"
+   "\t\t\t\tif (keysPressed & KEY_ZL) push3dsBackendAction(eventQueue, true);\n"
+   "\t\t\t\tif (keysReleased & KEY_START) push3dsBackendAction(eventQueue, false);\n"
+   "\t\t\t}\n"
+   "\t\t}\n",
+   "ZL / START also work when the game has the keymapper off")
+print("done")
+rw(EV,
+   "static void eventThreadFunc(void *arg) {\n",
+   "static void push3dsBackendAction(Common::Queue<Common::Event> *queue, bool swap); // ultima-3ds, after the enum\n\n"
+   "static void eventThreadFunc(void *arg) {\n",
+   "static void push3dsBackendAction(Common::Queue<Common::Event> *queue, bool swap); // ultima-3ds")
+rw(EV,
+   "\tk3DSEventSwap\n};\n",
+   "\tk3DSEventSwap\n};\n\n"
+   "// ultima-3ds: SWAP (on press) and MANUAL (on release) as the keymapper would send them\n"
+   "static void push3dsBackendAction(Common::Queue<Common::Event> *queue, bool swap) {\n"
+   "\tCommon::Event c;\n"
+   "\tc.type = swap ? Common::EVENT_CUSTOM_BACKEND_ACTION_START : Common::EVENT_CUSTOM_BACKEND_ACTION_END;\n"
+   "\tc.customType = swap ? k3DSEventSwap : k3DSEventManual;\n"
+   "\tpushEventQueue(queue, c);\n"
+   "}\n",
+   "// ultima-3ds: SWAP (on press) and MANUAL (on release)")
+print("done")

@@ -276,7 +276,7 @@ inline void build(State &st) {
 			       { "Create a Character", key('c') }, { "Skip", named(kEscape) },
 			       { "Transfer a Character", key('t') }, { "A", key('a') },
 			       { "Introduction", key('i') }, { "B", key('b') } };
-			grid(b, kFullX, kTopY, kFullW, 160, 2, it);
+			grid(b, kFullX, kTopY, kFullW, kTopH, 2, it);   // fill down to the strip
 		} else {
 			it = { { "Journey Onward", key('j') }, { "New Game", key('i') }, { "Return to View", key('r') },
 			       { "Configure", key('c') }, { "About", key('a') }, { "Continue", named(kSpace) } };
