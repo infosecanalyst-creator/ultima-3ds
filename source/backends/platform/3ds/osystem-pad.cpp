@@ -3,7 +3,7 @@
  * While an Ultima game runs, the game is shown on the top screen and the
  * touch screen shows an automap and buttons for whatever the game is waiting
  * for (pad_ui.h; the engines report their state through common/pad3ds.h).
- * A tap sends the same key presses a keyboard would. SELECT (or SWAP) puts
+ * A tap sends the same key presses a keyboard would. ZL (or SWAP) puts
  * the game back on the touch screen for direct stylus play; the top screen
  * then shows a larger automap. ScummVM's own menus and the launcher keep the
  * normal touch-screen layout.
@@ -37,7 +37,7 @@ static Sprite *s_bottomSprite = nullptr, *s_topSprite = nullptr;
 static uint8_t s_bottomPx[320 * 240 * 3], s_topPx[400 * 240 * 3];
 static bool s_bottomDirty = true, s_topDirty = true;
 static uint32 s_drawnMapSerial = ~0u, s_drawnSerial = ~0u;
-static bool s_swapped = false;          // SELECT: game on the touch screen
+static bool s_swapped = false;          // ZL / SWAP: game on the touch screen
 static uint32 s_lastFrame = 0, s_lastFrameTime = 0;
 static uint32 s_autoTypeSerial = ~0u;
 
@@ -292,6 +292,17 @@ void OSystem_3DS::padPump() {
 		n = s_ntaps;
 		memcpy(taps, s_taps, sizeof(Tap) * n);
 		s_ntaps = 0;
+	}
+	// ZL / START while the game has the keymapper off (Ultima VI intro, title
+	// menu, cutscenes, typing): the input thread only sets these flags.
+	if (padSwapRequest) {
+		padSwapRequest = false;
+		padToggleSwap();
+	}
+	if (padManualRequest) {
+		padManualRequest = false;
+		updateScreen();
+		runManual();
 	}
 	if (padMode != 1)
 		return;

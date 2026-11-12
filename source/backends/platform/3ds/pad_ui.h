@@ -434,7 +434,7 @@ inline void draw(Canvas &cv, const State &st, uint32_t now) {
 }
 
 // The top screen while the game is on the touch screen: the automap 1.5x,
-// the place name and a reminder of SELECT.
+// the place name and a reminder of ZL.
 inline void drawDashboard(Canvas &cv) {
 	using namespace Pad3DS;
 	cv.fill(0, 0, cv.w, cv.h, kBg);
@@ -452,7 +452,7 @@ inline void drawDashboard(Canvas &cv) {
 	std::string place = info.place;
 	if ((int)place.size() > cols) { cutLabels().push_back(place); place.resize(cols); }
 	drawText(cv, rx, oy + 4, place, kGold);
-	static const char *const hint[] = { "SELECT puts the", "game back on the", "top screen with", "the buttons", "below." };
+	static const char *const hint[] = { "ZL puts the", "game back on the", "top screen with", "the buttons", "below." };
 	for (int i = 0; i < 5; ++i) {
 		if ((int)strlen(hint[i]) > cols) cutLabels().push_back(hint[i]);
 		drawText(cv, rx, oy + 40 + i * 15, hint[i], kGrey, false);
