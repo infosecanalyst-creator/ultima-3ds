@@ -140,8 +140,8 @@ inline void grid(std::vector<Button> &out, int x, int y, int w, int h, int cols,
 	if (items.empty()) return;
 	if (!rows) rows = ((int)items.size() + cols - 1) / cols;
 	const int bw = (w - gap * (cols - 1)) / cols;
-	int bh = (h - gap * (rows - 1)) / rows;
-	if (bh > 40) bh = 40;
+	// Buttons grow to fill their area (fill rule: no empty band above the strip).
+	const int bh = (h - gap * (rows - 1)) / rows;
 	for (size_t i = 0; i < items.size(); ++i) {
 		const int c = (int)i % cols, r = (int)i / cols;
 		Button b = { x + c * (bw + gap), y + r * (bh + gap), bw, bh, items[i].first, items[i].second, false };
@@ -190,7 +190,7 @@ inline void u6More(Items &it) {
 	       { "Cursor", named(kTab) }, { "Inventory", key('i') }, { "Back", special(kBack) } };
 }
 inline void arrows(std::vector<Button> &out, int x, int y, int w, int h, const char *okLabel, const Action &ok) {
-	const int bw = (w - 8) / 3, bh = (h - 12) / 4 > 40 ? 40 : (h - 12) / 4;
+	const int bw = (w - 8) / 3, bh = (h - 12) / 4;   // fill the area
 	auto add = [&](int c, int r, const char *l, const Action &a) {
 		Button b = { x + c * (bw + 4), y + r * (bh + 4), bw, bh, l, a, false };
 		out.push_back(b);
