@@ -38,6 +38,8 @@ jobs:
         run: |
           mkdir -p out
           cp out/3ds/scummvm/scummvm.3dsx out/ 2>/dev/null || true
+          # the .elf so hardware crash dumps can be symbolized (llvm-addr2line -f -C -e scummvm.elf <PC>)
+          find scummvm -maxdepth 1 -name "scummvm.elf" -exec gzip -c {} \; > out/scummvm.elf.gz 2>/dev/null || true
           cp libs.log build.log build-3ds.log out/ 2>/dev/null || true
           echo "$GITHUB_SHA" > out/SOURCE_COMMIT
       - name: Publish to builds branch

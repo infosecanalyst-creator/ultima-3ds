@@ -813,3 +813,12 @@ rw(OH,
    "\tvolatile bool padSwapRequest = false, padManualRequest = false; // ZL / START with the keymapper off\n",
    "padSwapRequest = false, padManualRequest")
 print("done")
+
+# ---------------------------------------- main-thread stack: 64 KB -> 1 MB
+# Ultima VI's Journey Onward overflowed the 64 KB stack on hardware (data abort,
+# SP 0x07FFFFD8, FAR just below it, Nov 12 2026). The emulator does not enforce it.
+rw("backends/platform/3ds/main.cpp",
+   "u32 __stacksize__ = 64 * 1024;",
+   "u32 __stacksize__ = 1024 * 1024; // ultima-3ds: Ultima VI needs more than 64 KB",
+   "ultima-3ds: Ultima VI needs more than 64 KB")
+print("done")
