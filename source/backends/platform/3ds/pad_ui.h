@@ -438,6 +438,32 @@ inline void draw(Canvas &cv, const State &st, uint32_t now) {
 inline void drawDashboard(Canvas &cv) {
 	using namespace Pad3DS;
 	cv.fill(0, 0, cv.w, cv.h, kBg);
+	if (!info.mapValid) {
+		// No map yet (intro, title menu, cutscenes): the touch-screen controls,
+		// filling the screen like the launcher card (fill rule).
+		cv.fill(0, 0, cv.w, 22, kFace);
+		drawText(cv, 8, 5, "GAME ON THE TOUCH SCREEN", kGold);
+		static const char *const lines[] = {
+			"Tap the game to click where you tap.",
+			"",
+			"*BUTTONS",
+			"Circle Pad: move the mouse cursor",
+			"A: left click     B: right click",
+			"D-pad: walk",
+			"R: drag / hover touch mode",
+			"",
+			"ZL: game back on top, buttons below",
+			"START: manual",
+		};
+		for (int i = 0; i < 10; ++i) {
+			const char *t = lines[i];
+			const bool head = t[0] == '*';
+			if (head) ++t;
+			if (textWidth(t) > cv.w - 16) cutLabels().push_back(t);
+			drawText(cv, 8, 36 + i * 20, t, head ? kGold : kGrey, false);
+		}
+		return;
+	}
 	const int n = kMap * 3 / 2, ox = 10, oy = (cv.h - n) / 2;
 	if (info.mapValid) {
 		cv.fill(ox - 2, oy - 2, n + 4, n + 4, kEdge);
