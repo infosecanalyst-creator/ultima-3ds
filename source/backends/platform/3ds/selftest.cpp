@@ -122,34 +122,65 @@ static void st_shot(const char* name) {
     st_logf("shot %s (frame %llu)\n", name, (unsigned long long)st_frame);
 }
 
-// Start the test agent again when the script ends (or the game hangs).
+// Point the Homebrew loader at the test agent: it starts when this process ends.
+static void st_set_target(void) {
+    Handle h;
+    if (R_FAILED(svcConnectToPort(&h, "hb:ldr"))) return;
+    static const char path[] = "/3ds/testagent/testagent.3dsx";
+    u32* cmd = getThreadCommandBuffer();
+    cmd[0] = IPC_MakeHeader(2, 0, 2);
+    cmd[1] = IPC_Desc_StaticBuffer(sizeof path, 0);
+    cmd[2] = (u32)path;
+    svcSendSyncRequest(h);
+    static u32 argv[0x100];
+    argv[0] = 1;
+    strcpy((char*)&argv[1], "sdmc:/3ds/testagent/testagent.3dsx");
+    cmd = getThreadCommandBuffer();
+    cmd[0] = IPC_MakeHeader(3, 0, 2);
+    cmd[1] = IPC_Desc_StaticBuffer(sizeof argv, 1);
+    cmd[2] = (u32)argv;
+    svcSendSyncRequest(h);
+    svcCloseHandle(h);
+}
+
+// The script ended: quit the normal way. aptMainLoop() now returns false, so the
+// game runs its own cleanup (calling exit() from inside a frame crashed the GSP
+// thread). If the game does not get out by itself, the watchdog ends it.
 static void st_finish(const char* why) {
     st_logf("%s\ndone frames=%llu\n", why, (unsigned long long)st_frame);
-    if (st_log) fclose(st_log);
-    st_log = NULL;
-    Handle h;
-    if (R_SUCCEEDED(svcConnectToPort(&h, "hb:ldr"))) {
-        static const char path[] = "/3ds/testagent/testagent.3dsx";
-        u32* cmd = getThreadCommandBuffer();
-        cmd[0] = IPC_MakeHeader(2, 0, 2);
-        cmd[1] = IPC_Desc_StaticBuffer(sizeof path, 0);
-        cmd[2] = (u32)path;
-        svcSendSyncRequest(h);
-        static u32 argv[0x100];
-        argv[0] = 1;
-        strcpy((char*)&argv[1], "sdmc:/3ds/testagent/testagent.3dsx");
-        cmd = getThreadCommandBuffer();
-        cmd[0] = IPC_MakeHeader(3, 0, 2);
-        cmd[1] = IPC_Desc_StaticBuffer(sizeof argv, 1);
-        cmd[2] = (u32)argv;
-        svcSendSyncRequest(h);
-        svcCloseHandle(h);
-    }
-    // Quit the normal way: aptMainLoop() now returns false, so the game runs its
-    // own cleanup (calling exit() from here crashed the GSP thread on hardware).
-    // A game that never asks aptMainLoop is ended 10 seconds later.
+    st_set_target();
     st_done = 1;
     st_doneFrame = st_frame;
+}
+
+// Watchdog thread: nobody has to look after the 3DS. It ends the game and
+// returns to the agent when the game does not quit within 15 s of the script's
+// end, when frames stop for 60 s (a hang), or after 30 minutes in all.
+static volatile u64 st_beat;
+static void st_watchdog(void* arg) {
+    (void)arg;
+    u64 last = 0, still = 0, doneAt = 0, start = osGetTime();
+    for (;;) {
+        svcSleepThread(1000000000LL);
+        u64 now = osGetTime();
+        const char* why = NULL;
+        if (st_done) {
+            if (!doneAt) doneAt = now;
+            if (now - doneAt > 15000) why = "watchdog: the game did not quit by itself after the script";
+        } else {
+            if (st_beat != last) { last = st_beat; still = now; }
+            else if (now - still > 60000) why = "watchdog: no frames for 60 s (the game hung)";
+            if (now - start > 30 * 60 * 1000) why = "watchdog: the test ran longer than 30 minutes";
+        }
+        if (why) {
+            st_logf("%s\n%s\n", why, st_done ? "" : "done frames=0 (stopped by the watchdog)");
+            if (st_log) { fclose(st_log); st_log = NULL; }
+            st_set_target();
+            aptSetChainloaderToSelf();   // relaunch the Homebrew loader, which starts the agent
+            aptExit();
+            svcExitProcess();
+        }
+    }
 }
 
 static void st_load(const char* script) {
@@ -184,6 +215,9 @@ static void st_init(void) {
     st_load(script);
     st_logf("selftest: %d steps from %s\n", st_n, script);
     st_on = 1;
+    s32 prio = 0x30;
+    svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
+    threadCreate(st_watchdog, NULL, 16 * 1024, prio - 1, -2, true);
 }
 
 // One step of the script per frame; returns when the step needs more frames.
@@ -218,9 +252,9 @@ void __wrap_hidScanInput(void) {
     if (st_on < 0) st_init();
     if (st_on != 1) return;
     st_frame++;
+    st_beat = st_frame;
     if (st_done) {
         st_held = st_prev = 0;
-        if (st_frame > st_doneFrame + 600) exit(0);
         return;
     }
     st_step();
