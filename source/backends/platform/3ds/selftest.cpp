@@ -107,18 +107,64 @@ static void st_bmp(const char* path, const u8* fb, int fmt, int w, int h, int st
     fclose(f);
 }
 
+// One pixel of what a screen shows now, as 0xRRGGBB (x, y in 400x240 / 320x240 layout pixels).
+static long st_pixel(int top, int x, int y) {
+    GSPGPU_CaptureInfo ci;
+    if (R_FAILED(GSPGPU_ImportDisplayCaptureInfo(&ci))) return -1;
+    GSPGPU_CaptureInfoEntry* e = &ci.screencapture[top ? 0 : 1];
+    int fmt = e->format & 7;
+    if (top && (e->format & 0x60) == 0) x *= 2;   // 800-pixel mode
+    int bpp = fmt == GSP_RGBA8_OES ? 4 : fmt == GSP_BGR8_OES ? 3 : 2;
+    const u8* p = (const u8*)e->framebuf0_vaddr + x * e->framebuf_widthbytesize + (239 - y) * bpp;
+    if (fmt == GSP_RGBA8_OES) return (p[3] << 16) | (p[2] << 8) | p[1];
+    if (fmt == GSP_BGR8_OES) return (p[2] << 16) | (p[1] << 8) | p[0];
+    u16 c = p[0] | (p[1] << 8);
+    if (fmt == GSP_RGB565_OES) return ((c >> 11) << 19) | (((c >> 5) & 63) << 10) | ((c & 31) << 3);
+    return ((c >> 11) << 19) | (((c >> 6) & 31) << 11) | (((c >> 1) & 31) << 3);
+}
+
+static int st_waitTop, st_waitX, st_waitY;
+static long st_waitCol, st_waitMax, st_waitDone;
+
+// Screenshots: the screens are copied to memory at once (fast, on the game's
+// thread) and written to the SD card by a separate thread, so a slow SD card
+// never holds the game up (a shot froze Gold Box on the real 3DS).
+typedef struct { char path[160]; u8* px; int fmt, w, stride; } StShotJob;
+static StShotJob st_jobs[8];
+static volatile int st_jobHead, st_jobTail;
+static LightEvent st_jobEvent;
+static void st_writer(void* arg) {
+    (void)arg;
+    for (;;) {
+        LightEvent_Wait(&st_jobEvent);
+        while (st_jobTail != st_jobHead) {
+            StShotJob* j = &st_jobs[st_jobTail % 8];
+            st_bmp(j->path, j->px, j->fmt, j->w, 240, j->stride);
+            free(j->px);
+            j->px = NULL;
+            st_jobTail++;
+        }
+    }
+}
 static void st_shot(const char* name) {
     GSPGPU_CaptureInfo ci;
     if (R_FAILED(GSPGPU_ImportDisplayCaptureInfo(&ci))) { st_logf("shot %s: capture failed\n", name); return; }
-    char p[512];
     for (int s = 0; s < 2; s++) {
         GSPGPU_CaptureInfoEntry* e = &ci.screencapture[s];
-        int fmt = e->format & 7;
+        if (st_jobHead - st_jobTail >= 8) { st_logf("shot %s: writer behind, skipped\n", name); return; }
+        StShotJob* j = &st_jobs[st_jobHead % 8];
+        j->fmt = e->format & 7;
         // the top screen in the 800-pixel mode: neither the 2D (bit 6) nor the 3D (bit 5) flag
-        int w = s == 0 ? ((e->format & 0x60) == 0 ? 800 : 400) : 320;
-        snprintf(p, sizeof p, "%s/%s_%s.bmp", st_dir, name, s == 0 ? "top" : "bottom");
-        st_bmp(p, (const u8*)e->framebuf0_vaddr, fmt, w, 240, e->framebuf_widthbytesize);
+        j->w = s == 0 ? ((e->format & 0x60) == 0 ? 800 : 400) : 320;
+        j->stride = e->framebuf_widthbytesize;
+        size_t n = (size_t)j->w * j->stride;
+        j->px = (u8*)malloc(n);
+        if (!j->px) { st_logf("shot %s: no memory\n", name); return; }
+        memcpy(j->px, e->framebuf0_vaddr, n);
+        snprintf(j->path, sizeof j->path, "%s/%s_%s.bmp", st_dir, name, s == 0 ? "top" : "bottom");
+        st_jobHead++;
     }
+    LightEvent_Signal(&st_jobEvent);
     st_logf("shot %s (frame %llu)\n", name, (unsigned long long)st_frame);
 }
 
@@ -147,6 +193,7 @@ static void st_set_target(void) {
 // game runs its own cleanup (calling exit() from inside a frame crashed the GSP
 // thread). If the game does not get out by itself, the watchdog ends it.
 static void st_finish(const char* why) {
+    for (int i = 0; i < 200 && st_jobTail != st_jobHead; i++) svcSleepThread(100000000LL);   // let the last shots reach the SD card
     st_logf("%s\ndone frames=%llu\n", why, (unsigned long long)st_frame);
     st_set_target();
     st_done = 1;
@@ -218,6 +265,8 @@ static void st_init(void) {
     s32 prio = 0x30;
     svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
     threadCreate(st_watchdog, NULL, 16 * 1024, prio - 1, -2, true);
+    LightEvent_Init(&st_jobEvent, RESET_ONESHOT);
+    threadCreate(st_writer, NULL, 32 * 1024, prio + 2, -2, true);
 }
 
 // One step of the script per frame; returns when the step needs more frames.
@@ -225,6 +274,15 @@ static void st_step(void) {
     st_prev = st_held;
     if (st_tapFrames) st_tapFrames--;
     if (st_stickFrames && !--st_stickFrames) st_stick = 0;
+    if (st_waitMax > 0) {   // waitpix: until the pixel matches, or the limit
+        long c = st_pixel(st_waitTop, st_waitX, st_waitY);
+        int dr = (int)((c >> 16) & 255) - (int)((st_waitCol >> 16) & 255), dg = (int)((c >> 8) & 255) - (int)((st_waitCol >> 8) & 255),
+            db = (int)(c & 255) - (int)(st_waitCol & 255);
+        int hit = c >= 0 && abs(dr) < 48 && abs(dg) < 48 && abs(db) < 48;
+        if (!hit && ++st_waitDone < st_waitMax) return;
+        st_logf("waitpix: %s after %ld frames\n", hit ? "found" : "NOT FOUND", st_waitDone);
+        st_waitMax = 0;
+    }
     if (st_wait > 0) {
         if (--st_wait == 0) st_held &= st_hold;   // a press ends; held buttons stay
         return;
@@ -241,6 +299,13 @@ static void st_step(void) {
         if (!strcmp(cmd, "tap")) { st_tx = atoi(a1); st_ty = atoi(a2); st_tapFrames = *a3 ? atoi(a3) : 6; st_held |= KEY_TOUCH; st_wait = st_tapFrames; return; }
         if (!strcmp(cmd, "stick")) { st_stick = a1[0] == 'C' ? 2 : 1; st_sx = atoi(a2); st_sy = atoi(a3); st_stickFrames = atoi(a4); continue; }
         if (!strcmp(cmd, "shot")) { st_shot(a1); continue; }
+        if (!strcmp(cmd, "waitpix")) {   // waitpix top|bottom X Y RRGGBB MAXFRAMES
+            st_waitTop = !strcmp(a1, "top"); st_waitX = atoi(a2); st_waitY = atoi(a3);
+            char col[16] = ""; long mx = 0;
+            sscanf(st_lines[st_pc - 1], "%*s %*s %*s %*s %15s %ld", col, &mx);
+            st_waitCol = strtol(col, NULL, 16); st_waitMax = mx; st_waitDone = 0;
+            return;
+        }
         if (!strcmp(cmd, "hang")) continue;   // the emulator suite checks hangs; here the agent times out
         if (!strcmp(cmd, "end")) break;
     }
