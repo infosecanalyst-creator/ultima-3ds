@@ -42,6 +42,10 @@ if [ ! -f config.mk ]; then
         --disable-debug --enable-release-mode --enable-optimizations
 fi
 
+# On-3DS testing: the selftest library replaces these input functions only when started
+# with --selftest (see backends/platform/3ds/selftest.cpp).
+grep -q "selftest wraps" config.mk || echo 'LDFLAGS += -Wl,--wrap=hidScanInput,--wrap=hidKeysHeld,--wrap=hidKeysDown,--wrap=hidKeysDownRepeat,--wrap=hidKeysUp,--wrap=hidTouchRead,--wrap=hidCircleRead,--wrap=irrstCstickRead,--wrap=aptMainLoop # selftest wraps' >> config.mk
+
 echo "==> make -j$JOBS"
 make -j"$JOBS" 2>&1 | tee "$HERE/build-3ds.log"
 make scummvm.3dsx

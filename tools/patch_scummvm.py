@@ -822,3 +822,13 @@ rw("backends/platform/3ds/main.cpp",
    "u32 __stacksize__ = 1024 * 1024; // ultima-3ds: Ultima VI needs more than 64 KB",
    "ultima-3ds: Ultima VI needs more than 64 KB")
 print("done")
+
+# ------------------------------------------------------- on-3DS testing
+# selftest.cpp (from 3ds-test-suite/hwtest): inert unless the test agent starts
+# ScummVM with --selftest=<script>. The --wrap flags are added in build-3ds.sh.
+copy("backends/platform/3ds/selftest.cpp")
+rw("backends/platform/3ds/module.mk",
+   "\tosystem-pad.o\n",
+   "\tosystem-pad.o \\\n\tselftest.o\n",
+   "selftest.o")
+print("done")
