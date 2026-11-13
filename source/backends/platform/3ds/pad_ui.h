@@ -20,6 +20,7 @@
 #ifndef PAD_UI_H
 #define PAD_UI_H
 
+#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -435,14 +436,31 @@ inline void draw(Canvas &cv, const State &st, uint32_t now) {
 
 // The top screen while the game is on the touch screen: the automap 1.5x,
 // the place name and a reminder of ZL.
+// House style (claude/3ds-look-and-feel.md): a 22 px header bar with the
+// title in gold, and a 16 px hint strip at y 224 saying what the buttons do.
+inline void drawHeader(Canvas &cv, const std::string &title, const std::string &status = "") {
+	cv.fill(0, 0, cv.w, 22, kFace);
+	drawText(cv, 8, 5, title, kGold);
+	if (!status.empty()) {
+		std::string st = status;
+		const int room = (cv.w - 16 - textWidth(title) - 12) / 6;
+		if ((int)st.size() > room) { cutLabels().push_back(st); st.resize(room > 0 ? room : 0); }
+		drawText(cv, cv.w - 8 - textWidth(st), 5, st, kWhite);
+	}
+}
+inline void drawHintStrip(Canvas &cv, const std::string &hint) {
+	cv.fill(0, 224, cv.w, 16, kShade);
+	if (textWidth(hint) > cv.w - 8) cutLabels().push_back(hint);
+	drawText(cv, (cv.w - textWidth(hint)) / 2, 226, hint, kGold, false);
+}
+
 inline void drawDashboard(Canvas &cv) {
 	using namespace Pad3DS;
 	cv.fill(0, 0, cv.w, cv.h, kBg);
 	if (!info.mapValid) {
 		// No map yet (intro, title menu, cutscenes): the touch-screen controls,
 		// filling the screen like the launcher card (fill rule).
-		cv.fill(0, 0, cv.w, 22, kFace);
-		drawText(cv, 8, 5, "GAME ON THE TOUCH SCREEN", kGold);
+		drawHeader(cv, "GAME ON THE TOUCH SCREEN");
 		static const char *const lines[] = {
 			"Tap the game to click where you tap.",
 			"",
@@ -451,11 +469,10 @@ inline void drawDashboard(Canvas &cv) {
 			"A: left click     B: right click",
 			"D-pad: walk",
 			"R: drag / hover touch mode",
-			"",
 			"ZL: game back on top, buttons below",
-			"START: manual",
 		};
-		for (int i = 0; i < 10; ++i) {
+		drawHintStrip(cv, "ZL swap screens    START manual");
+		for (int i = 0; i < 8; ++i) {
 			const char *t = lines[i];
 			const bool head = t[0] == '*';
 			if (head) ++t;
@@ -464,12 +481,15 @@ inline void drawDashboard(Canvas &cv) {
 		}
 		return;
 	}
-	const int n = kMap * 3 / 2, ox = 10, oy = (cv.h - n) / 2;
+	// Map between the header bar and the hint strip (y 28..220).
+	const int n = std::min(kMap * 3 / 2, 192), ox = 10, oy = 28;
+	drawHeader(cv, "ULTIMA", info.place);
+	drawHintStrip(cv, "ZL swap screens    START manual");
 	if (info.mapValid) {
 		cv.fill(ox - 2, oy - 2, n + 4, n + 4, kEdge);
 		for (int y = 0; y < n; ++y)
 			for (int x = 0; x < n; ++x) {
-				const uint8_t *p = info.map + ((y * 2 / 3) * kMap + x * 2 / 3) * 3;
+				const uint8_t *p = info.map + ((y * kMap / n) * kMap + x * kMap / n) * 3;
 				uint8_t *d = cv.px + ((oy + y) * cv.w + ox + x) * 3;
 				d[0] = p[0]; d[1] = p[1]; d[2] = p[2];
 			}
@@ -477,13 +497,13 @@ inline void drawDashboard(Canvas &cv) {
 	const int rx = ox + n + 12, rw = cv.w - rx - 6, cols = rw / 6;
 	std::string place = info.place;
 	if ((int)place.size() > cols) { cutLabels().push_back(place); place.resize(cols); }
-	drawText(cv, rx, oy + 4, place, kGold);
-	// The controls for the game on the touch screen, down to the bottom (fill rule).
+	(void)place;   // shown in the header bar
+	// The controls for the game on the touch screen, down to the hint strip (fill rule).
 	static const char *const hint[] = { "ZL: game back on", "top, buttons below", "", "Circle Pad: cursor", "A: left click",
-		"B: right click", "D-pad: walk", "R: drag / hover", "START: manual" };
-	for (int i = 0; i < 9; ++i) {
+		"B: right click", "D-pad: walk", "R: drag / hover" };
+	for (int i = 0; i < 8; ++i) {
 		if ((int)strlen(hint[i]) > cols) cutLabels().push_back(hint[i]);
-		drawText(cv, rx, oy + 30 + i * 20, hint[i], i < 2 ? kWhite : kGrey, false);
+		drawText(cv, rx, oy + 6 + i * 22, hint[i], i < 2 ? kWhite : kGrey, false);
 	}
 }
 
@@ -492,8 +512,8 @@ inline void drawDashboard(Canvas &cv) {
 // always in use).
 inline void drawLauncherCard(Canvas &cv) {
 	cv.fill(0, 0, cv.w, cv.h, kBg);
-	cv.fill(0, 0, cv.w, 22, kFace);
-	drawText(cv, 8, 5, "ULTIMA IV AND VI FOR NEW 3DS", kGold);
+	drawHeader(cv, "ULTIMA IV AND VI FOR NEW 3DS");
+	drawHintStrip(cv, "ZL swap screens    START manual");
 	static const char *const lines[] = {
 		"Tap a game on the touch screen, then Start.",
 		"New game: Add Game, then pick the ULTIMA4",
@@ -507,13 +527,13 @@ inline void drawLauncherCard(Canvas &cv) {
 		"",
 		"START: manual (works here too)",
 	};
-	// 11 lines, 18 px apart: the card reaches the bottom of the screen (fill rule).
+	// 11 lines, 17 px apart: the card reaches the hint strip (fill rule).
 	for (int i = 0; i < 11; ++i) {
 		const char *t = lines[i];
 		const bool head = t[0] == '*';
 		if (head) ++t;
 		if (textWidth(t) > cv.w - 16) cutLabels().push_back(t);
-		drawText(cv, 8, 34 + i * 18, t, head ? kGold : kGrey, false);
+		drawText(cv, 8, 31 + i * 17, t, head ? kGold : kGrey, false);
 	}
 }
 

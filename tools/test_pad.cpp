@@ -112,6 +112,11 @@ int main(int argc, char **argv) {
 	PadUI::Canvas top = { 400, 240, tpx };
 	PadUI::drawDashboard(top);
 	save(dir, "dashboard", top);
+	PadUI::drawLauncherCard(top);
+	save(dir, "launcher_card", top);
+	info.mapValid = false;
+	PadUI::drawDashboard(top);
+	save(dir, "dashboard_nomap", top);
 
 	for (auto &c : PadUI::cutLabels()) printf("CUT: %s\n", c.c_str());
 	printf("%s\n", PadUI::cutLabels().empty() ? "all labels fit" : "LABELS CUT");
