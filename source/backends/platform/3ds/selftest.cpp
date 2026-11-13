@@ -133,13 +133,25 @@ typedef struct { char path[160]; u8* px; int fmt, w, stride; } StShotJob;
 static StShotJob st_jobs[8];
 static volatile int st_jobHead, st_jobTail;
 static LightEvent st_jobEvent;
+// What the writer is doing, read by the game's thread for the log (the writer
+// itself never logs, so the two threads never share the log file).
+static const char* volatile st_writing;
+static volatile u32 st_wroteN, st_wroteMs, st_wroteMaxMs;
+static int st_writerCore = -2;
 static void st_writer(void* arg) {
     (void)arg;
     for (;;) {
         LightEvent_Wait(&st_jobEvent);
         while (st_jobTail != st_jobHead) {
             StShotJob* j = &st_jobs[st_jobTail % 8];
+            st_writing = j->path;
+            u64 t0 = osGetTime();
             st_bmp(j->path, j->px, j->fmt, j->w, 240, j->stride);
+            u32 ms = (u32)(osGetTime() - t0);
+            st_writing = NULL;
+            st_wroteN++;
+            st_wroteMs += ms;
+            if (ms > st_wroteMaxMs) st_wroteMaxMs = ms;
             free(j->px);
             j->px = NULL;
             st_jobTail++;
@@ -194,6 +206,11 @@ static void st_set_target(void) {
 // thread). If the game does not get out by itself, the watchdog ends it.
 static void st_finish(const char* why) {
     for (int i = 0; i < 200 && st_jobTail != st_jobHead; i++) svcSleepThread(100000000LL);   // let the last shots reach the SD card
+    const char* w = st_writing;
+    st_logf("writer: core %d, %lu files, %lu ms in all, slowest %lu ms\n", st_writerCore,
+            (unsigned long)st_wroteN, (unsigned long)st_wroteMs, (unsigned long)st_wroteMaxMs);
+    if (st_jobTail != st_jobHead)
+        st_logf("writer: %d files never written, stuck on %s\n", st_jobHead - st_jobTail, w ? w : "(waiting for the CPU)");
     st_logf("%s\ndone frames=%llu\n", why, (unsigned long long)st_frame);
     st_set_target();
     st_done = 1;
@@ -266,7 +283,14 @@ static void st_init(void) {
     svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
     threadCreate(st_watchdog, NULL, 16 * 1024, prio - 1, -2, true);
     LightEvent_Init(&st_jobEvent, RESET_ONESHOT);
-    threadCreate(st_writer, NULL, 32 * 1024, prio + 2, -2, true);
+    // The writer runs on the New 3DS's extra core (2), so a busy game or sound
+    // thread on the game's core can never starve it (it stalled in Gold Box
+    // once the demo's sound started). Old 3DS: the game's core, as before.
+    st_writerCore = 2;
+    if (!threadCreate(st_writer, NULL, 32 * 1024, prio + 2, 2, true)) {
+        st_writerCore = -2;
+        threadCreate(st_writer, NULL, 32 * 1024, prio + 2, -2, true);
+    }
 }
 
 // One step of the script per frame; returns when the step needs more frames.
