@@ -70,23 +70,25 @@ static u32 st_button(const char* b) {
 }
 
 // Both screens as 24-bit BMP files, read from what the screens are showing now.
+// The whole file is built in memory and written with one call: the SD card
+// is shared with the game, and on real hardware 240 small row writes queued
+// behind Gold Box's own SD reads took minutes per shot.
 static void st_bmp(const char* path, const u8* fb, int fmt, int w, int h, int stride) {
-    FILE* f = fopen(path, "wb");
-    if (!f) return;
     int row = (w * 3 + 3) & ~3;
     u32 size = 54 + row * h;
-    u8 hd[54] = {'B', 'M'};
+    u8* buf = (u8*)calloc(1, size);
+    if (!buf) return;
+    u8* hd = buf;
+    hd[0] = 'B'; hd[1] = 'M';
     memcpy(hd + 2, &size, 4);
     u32 v = 54; memcpy(hd + 10, &v, 4);
     v = 40; memcpy(hd + 14, &v, 4);
     memcpy(hd + 18, &w, 4);
     memcpy(hd + 22, &h, 4);
     hd[26] = 1; hd[28] = 24;
-    fwrite(hd, 1, 54, f);
-    u8* line = (u8*)malloc(row);
     int bpp = fmt == GSP_RGBA8_OES ? 4 : fmt == GSP_BGR8_OES ? 3 : 2;
     for (int y = h - 1; y >= 0; y--) {           // BMP rows go bottom-up
-        memset(line, 0, row);
+        u8* line = buf + 54 + (size_t)(h - 1 - y) * row;
         for (int x = 0; x < w; x++) {
             // 3DS framebuffers are rotated: column x is stored as a run of 240 pixels, y from the bottom.
             const u8* p = fb + x * stride + (239 - y) * bpp;
@@ -101,10 +103,14 @@ static void st_bmp(const char* path, const u8* fb, int fmt, int w, int h, int st
             }
             line[x * 3] = b; line[x * 3 + 1] = g; line[x * 3 + 2] = r;
         }
-        fwrite(line, 1, row, f);
     }
-    free(line);
-    fclose(f);
+    FILE* f = fopen(path, "wb");
+    if (f) {
+        setvbuf(f, NULL, _IONBF, 0);             // straight to the card in one request
+        fwrite(buf, 1, size, f);
+        fclose(f);
+    }
+    free(buf);
 }
 
 // One pixel of what a screen shows now, as 0xRRGGBB (x, y in 400x240 / 320x240 layout pixels).
