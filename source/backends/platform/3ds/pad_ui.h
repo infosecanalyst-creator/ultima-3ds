@@ -471,7 +471,7 @@ inline void drawDashboard(Canvas &cv) {
 			"R: drag / hover touch mode",
 			"ZL: game back on top, buttons below",
 		};
-		drawHintStrip(cv, "ZL swap screens    START manual");
+		drawHintStrip(cv, "ZL swap screens    START menu");
 		for (int i = 0; i < 8; ++i) {
 			const char *t = lines[i];
 			const bool head = t[0] == '*';
@@ -484,7 +484,7 @@ inline void drawDashboard(Canvas &cv) {
 	// Map between the header bar and the hint strip (y 28..220).
 	const int n = std::min(kMap * 3 / 2, 192), ox = 10, oy = 28;
 	drawHeader(cv, "ULTIMA", info.place);
-	drawHintStrip(cv, "ZL swap screens    START manual");
+	drawHintStrip(cv, "ZL swap screens    START menu");
 	if (info.mapValid) {
 		cv.fill(ox - 2, oy - 2, n + 4, n + 4, kEdge);
 		for (int y = 0; y < n; ++y)
@@ -513,7 +513,7 @@ inline void drawDashboard(Canvas &cv) {
 inline void drawLauncherCard(Canvas &cv) {
 	cv.fill(0, 0, cv.w, cv.h, kBg);
 	drawHeader(cv, "ULTIMA IV AND VI FOR NEW 3DS");
-	drawHintStrip(cv, "ZL swap screens    START manual");
+	drawHintStrip(cv, "ZL swap screens    START menu");
 	static const char *const lines[] = {
 		"Tap a game on the touch screen, then Start.",
 		"New game: Add Game, then pick the ULTIMA4",
@@ -525,7 +525,7 @@ inline void drawLauncherCard(Canvas &cv) {
 		"ZR: U4 Enter, U6 Use     L: save, load, quit",
 		"ZL: swap the screens",
 		"",
-		"START: manual (works here too)",
+		"START: menu: manual, save, exit (works here too)",
 	};
 	// 11 lines, 17 px apart: the card reaches the hint strip (fill rule).
 	for (int i = 0; i < 11; ++i) {

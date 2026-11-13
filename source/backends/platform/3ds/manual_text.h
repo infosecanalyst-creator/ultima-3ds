@@ -3,7 +3,7 @@
 static const char *const kManualText = R"MANUAL(# Welcome
 Ultima IV: Quest of the Avatar and Ultima VI: The False Prophet, running in ScummVM on the New 3DS.
 
-Press Start at any time to open this manual: in the launcher, in a game or in a menu. The game waits underneath.
+Press Start at any time to open the menu (Resume, Manual, Save / Load / Options, Exit Game): in the launcher, in a game or in a menu. The game waits underneath. Manual opens this manual.
 
 ## Using this manual
 - Circle Pad or C-Stick up/down: scroll the text (hold to keep scrolling).
@@ -42,7 +42,7 @@ ScummVM's menus and the launcher always use the touch screen.
 | ZR | U4: Enter. U6: Use
 | L | ScummVM menu: save, load, quit
 | Select | Attack
-| Start | Open this manual
+| Start | Menu: Resume, Manual, Save / Load / Options, Exit Game (asks first)
 There is no mouse cursor on the top screen; Ultima VI's cursor appears when the game asks you to pick a target, and moves with the D-pad or arrow buttons.
 
 ## Game on the touch screen (SWAP)
@@ -56,7 +56,7 @@ There is no mouse cursor on the top screen; Ultima VI's cursor appears when the 
 With the game on the touch screen (ZL): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.
 
 ## Left-handed play
-Start, then the "Left hand" button at the bottom of the touch screen, swaps the D-pad with the face buttons: Y/Up, A/Right, B/Down, X/Left. It is saved and applies everywhere, including this manual.
+Start, Manual, then the "Left hand" button at the bottom of the touch screen, swaps the D-pad with the face buttons: Y/Up, A/Right, B/Down, X/Left. It is saved and applies everywhere, including this manual.
 
 # Launcher and saving
 ## Starting a game
