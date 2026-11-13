@@ -853,3 +853,12 @@ rw("backends/platform/3ds/main.cpp",
    "ultima-3ds: hide --selftest= from ScummVM's option parser. A copy")
 print("done")
 
+# Sprite never initialises its C3D_Tex. create() frees the old texture when
+# the size changes, so on the real 3DS (heap memory not zeroed) it freed a
+# garbage pointer: data abort in C3D_TexDelete <- Sprite::create, Nov 13 2026.
+rw("backends/platform/3ds/sprite.cpp",
+   "\tMtx_Identity(&modelview);\n",
+   "\ttexture = C3D_Tex(); // ultima-3ds: start with no texture (heap is not zeroed on hardware)\n\tMtx_Identity(&modelview);\n",
+   "ultima-3ds: start with no texture")
+print("done")
+
