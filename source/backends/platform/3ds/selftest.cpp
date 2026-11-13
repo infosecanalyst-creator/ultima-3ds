@@ -235,15 +235,18 @@ static void st_watchdog(void* arg) {
         u64 now = osGetTime();
         const char* why = NULL;
         if (st_done) {
+            // End the game ourselves as soon as the script is done. Asking it to
+            // quit (aptMainLoop false) crashed ScummVM on the real 3DS: its input
+            // thread still read the buttons after HID was shut down (Nov 13 2026).
             if (!doneAt) doneAt = now;
-            if (now - doneAt > 15000) why = "watchdog: the game did not quit by itself after the script";
+            why = "";
         } else {
             if (st_beat != last) { last = st_beat; still = now; }
             else if (now - still > 60000) why = "watchdog: no frames for 60 s (the game hung)";
             if (now - start > 30 * 60 * 1000) why = "watchdog: the test ran longer than 30 minutes";
         }
         if (why) {
-            st_logf("%s\n%s\n", why, st_done ? "" : "done frames=0 (stopped by the watchdog)");
+            if (*why) st_logf("%s\n%s\n", why, st_done ? "" : "done frames=0 (stopped by the watchdog)");
             if (st_log) { fclose(st_log); st_log = NULL; }
             st_set_target();
             aptSetChainloaderToSelf();   // relaunch the Homebrew loader, which starts the agent
@@ -354,8 +357,7 @@ void __wrap_hidScanInput(void) {
     }
     st_step();
 }
-bool __wrap_aptMainLoop(void) {
-    if (st_done) return false;
+bool __wrap_aptMainLoop(void) {   // the watchdog ends the game after the script; no quit request
     return __real_aptMainLoop();
 }
 u32 __wrap_hidKeysHeld(void) { return st_on == 1 ? st_held : __real_hidKeysHeld(); }
