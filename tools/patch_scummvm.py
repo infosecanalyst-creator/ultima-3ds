@@ -419,9 +419,9 @@ rw(EV,
    "\tif (event.type == Common::EVENT_CUSTOM_BACKEND_ACTION_END) {\n\t\treturn true; // We'll say we have handled the event so it is not propagated\n\t}\n",
    "\tif (event.type == Common::EVENT_CUSTOM_BACKEND_ACTION_END) {\n"
    "\t\tif ((_3DSCustomEvent)event.customType == k3DSEventManual)\n"
-   "\t\t\trunManual(); // on release, so the keymapper has seen Start go up\n"
+   "\t\t\trunPortMenu(); // on release, so the keymapper has seen Start go up\n"
    "\t\treturn true; // We'll say we have handled the event so it is not propagated\n\t}\n",
-   "runManual(); // on release")
+   "runPortMenu(); // on release")
 
 # ------------------------------------------------ Ultima buttons on the 3DS
 # Ultima IV is keyboard driven; give the common commands buttons.
@@ -577,7 +577,8 @@ rw(OH,
    "\tvoid padUpdateLayout();\n\tvoid padPrepare();\n\tvoid padRenderBottom();\n\tvoid padRenderTop();\n"
    "\tvoid padQueueTap(int x, int y);\n\tvoid padPump();\n\tvoid padToggleSwap();\n"
    "\tvoid padSendKey(const Common::KeyState &ks);\n\tvoid padTypeText(const char *t);\n"
-   "\tvoid padOpenKeyboard();\n\tvoid pushPadEvent(Common::Event &e);\n",
+   "\tvoid padOpenKeyboard();\n\tvoid pushPadEvent(Common::Event &e);\n"
+   "\tvoid runPortMenu();                // START: house-style port menu (osystem-pad.cpp)\n",
    "volatile bool padTouch")
 rw(G,
    "\tif (sleeping || exiting) {\n\t\treturn;\n\t}\n\n\tif (!_dirtyRects.empty()) {\n",

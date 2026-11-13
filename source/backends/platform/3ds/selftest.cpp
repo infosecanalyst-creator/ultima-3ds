@@ -287,6 +287,7 @@ static void st_init(void) {
     st_log = fopen(lp, "w");
     st_load(script);
     st_logf("selftest: %d steps from %s\n", st_n, script);
+    st_set_target();   // if the game exits by itself mid-test, the loader starts the agent, not the Homebrew Menu
     st_on = 1;
     s32 prio = 0x30;
     svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);

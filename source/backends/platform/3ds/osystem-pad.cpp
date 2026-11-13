@@ -302,7 +302,7 @@ void OSystem_3DS::padPump() {
 	if (padManualRequest) {
 		padManualRequest = false;
 		updateScreen();
-		runManual();
+		runPortMenu();
 	}
 	if (padMode != 1)
 		return;
@@ -366,6 +366,156 @@ void OSystem_3DS::padPump() {
 		padOpenKeyboard();
 	}
 	(void)s_lastFrame; (void)s_lastFrameTime; (void)s_drawnSerial;
+}
+
+// ---- START: the port menu (house style, claude/3ds-look-and-feel.md) ----------
+// RESUME, MANUAL, SAVE / LOAD (ScummVM's game menu: save, load, options; in a
+// game only) and EXIT GAME (asks first). Runs its own loop on the main thread
+// like the manual; the input thread pauses meanwhile (manualOpen).
+void OSystem_3DS::runPortMenu() {
+	static Sprite *top = nullptr, *bot = nullptr;
+	static uint8_t topPx[400 * 240 * 3], botPx[320 * 240 * 3];
+	if (!top) {
+		top = new Sprite;
+		bot = new Sprite;
+		top->create(400, 240, &kPadMode);
+		bot->create(320, 240, &kPadMode);
+		top->setPosition(0, 0);
+		bot->setPosition(0, 0);
+		top->setFilteringMode(false);
+		bot->setFilteringMode(false);
+	}
+	const bool inGame = g_engine != nullptr;
+	enum { kResume, kManual, kSave, kExit };
+	struct Item { const char *label; int act; };
+	std::vector<Item> items;
+	items.push_back({ "RESUME", kResume });
+	items.push_back({ "MANUAL", kManual });
+	if (inGame) items.push_back({ "SAVE / LOAD / OPTIONS", kSave });
+	items.push_back({ "EXIT GAME", kExit });
+
+	manualOpen = true;
+	if (R_SUCCEEDED(gspLcdInit())) {
+		GSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTH);
+		gspLcdExit();
+	}
+	delayMillis(30);                        // let the input thread finish its scan
+
+	int focus = 0, pressed = -1, chosen = -1;
+	bool confirm = false, redraw = true;
+	std::vector<PadUI::Button> btns;
+	while (aptMainLoop() && !exiting && chosen < 0) {
+		if (sleeping) { delayMillis(50); redraw = true; continue; }
+		hidScanInput();
+		const u32 down = hidKeysDown(), rep = hidKeysDownRepeat();
+		// layout: full-width buttons filling the touch screen below the header (rule 11)
+		btns.clear();
+		if (!confirm) {
+			const int n = (int)items.size(), y0 = 28, gap = 4, h = (240 - 6 - y0 - gap * (n - 1)) / n;
+			for (int i = 0; i < n; ++i)
+				btns.push_back({ 6, y0 + i * (h + gap), 308, h, items[i].label, PadUI::Action(), false });
+		} else {
+			btns.push_back({ 6, 120, 150, 112, "YES, EXIT", PadUI::Action(), false });
+			btns.push_back({ 164, 120, 150, 112, "NO", PadUI::Action(), false });
+		}
+		const int n = (int)btns.size();
+		if (focus >= n) focus = n - 1;
+		int hitIdx = -1;
+		if (rep & (KEY_DUP | KEY_DLEFT)) { focus = (focus + n - 1) % n; redraw = true; }
+		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { focus = (focus + 1) % n; redraw = true; }
+		if (down & KEY_A) hitIdx = focus;
+		if (down & KEY_TOUCH) {
+			touchPosition tp;
+			hidTouchRead(&tp);
+			for (int i = 0; i < n; ++i)
+				if (tp.px >= btns[i].x && tp.px < btns[i].x + btns[i].w && tp.py >= btns[i].y && tp.py < btns[i].y + btns[i].h)
+					hitIdx = i;
+		}
+		if (down & (KEY_B | KEY_START)) {
+			if (confirm) { confirm = false; focus = (int)items.size() - 1; redraw = true; }
+			else chosen = kResume;
+		}
+		if (hitIdx >= 0) {
+			click3ds::play();
+			pressed = hitIdx;
+			focus = hitIdx;
+			if (!confirm) {
+				if (items[hitIdx].act == kExit) { confirm = true; focus = 1; }
+				else chosen = items[hitIdx].act;
+			} else if (hitIdx == 0) {
+				chosen = kExit;
+			} else {
+				confirm = false;
+				focus = (int)items.size() - 1;
+			}
+			redraw = true;
+		}
+		if (!redraw) { gspWaitForVBlank(); continue; }
+		redraw = false;
+
+		PadUI::Canvas tc = { 400, 240, topPx };
+		tc.fill(0, 0, 400, 240, PadUI::kBg);
+		PadUI::drawHeader(tc, "ULTIMA IV AND VI", "PAUSED");
+		PadUI::drawText(tc, 8, 40, confirm ? "Exit the game?" : "The game is paused.", PadUI::kWhite);
+		PadUI::drawText(tc, 8, 62, confirm ? "Anything you have not saved is lost." : "Choose on the touch screen, or with", PadUI::kGrey, false);
+		if (!confirm) PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
+		PadUI::drawHintStrip(tc, confirm ? "A choose    B no" : "A choose    B / START resume");
+		PadUI::Canvas bc = { 320, 240, botPx };
+		bc.fill(0, 0, 320, 240, PadUI::kBg);
+		PadUI::drawHeader(bc, confirm ? "EXIT GAME" : "MENU");
+		if (confirm) {
+			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
+			PadUI::drawText(bc, 8, 62, "Unsaved progress is lost.", PadUI::kGrey, false);
+		}
+		for (int i = 0; i < n; ++i) {
+			PadUI::drawButton(bc, btns[i], i == pressed);
+			if (i == focus) {                 // 2 px gold focus ring
+				bc.frame(btns[i].x - 1, btns[i].y - 1, btns[i].w + 2, btns[i].h + 2, PadUI::kGold);
+				bc.frame(btns[i].x - 2, btns[i].y - 2, btns[i].w + 4, btns[i].h + 4, PadUI::kGold);
+			}
+		}
+		pressed = -1;
+		canvasToSprite(tc, top);
+		canvasToSprite(bc, bot);
+		C3D_FrameBegin(0);
+			top->transfer();
+			bot->transfer();
+		C3D_FrameEnd(0);
+		C3D_FrameBegin(0);
+			C3D_RenderTargetClear(_renderTargetTop, C3D_CLEAR_ALL, 0x00000000, 0);
+			C3D_FrameDrawOn(_renderTargetTop);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionTop);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, top->getMatrix());
+			top->render();
+			C3D_RenderTargetClear(_renderTargetBottom, C3D_CLEAR_ALL, 0x00000000, 0);
+			C3D_FrameDrawOn(_renderTargetBottom);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionBottom);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, bot->getMatrix());
+			bot->render();
+		C3D_FrameEnd(0);
+	}
+	// wait for the button / stylus that closed the menu to be let go
+	for (int i = 0; i < 100 && aptMainLoop(); ++i) {
+		hidScanInput();
+		if (!(hidKeysHeld() & (KEY_TOUCH | KEY_A | KEY_B | KEY_START)))
+			break;
+		delayMillis(10);
+	}
+	manualOpen = false;
+	updateBacklight();
+	updateScreen();
+
+	if (chosen == kManual) {
+		runManual();
+	} else if (chosen == kSave && g_engine) {
+		Common::Event e;
+		e.type = Common::EVENT_MAINMENU;          // ScummVM's game menu: save, load, options
+		pushPadEvent(e);
+	} else if (chosen == kExit) {
+		Common::Event e;
+		e.type = Common::EVENT_QUIT;
+		pushPadEvent(e);
+	}
 }
 
 } // namespace N3DS
