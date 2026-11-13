@@ -832,3 +832,22 @@ rw("backends/platform/3ds/module.mk",
    "\tosystem-pad.o \\\n\tselftest.o\n",
    "selftest.o")
 print("done")
+
+# The test agent starts ScummVM with --selftest=<script>; ScummVM's own option
+# parser rejects unknown options and quits before the game starts (seen on the
+# real 3DS, Nov 13 2026: no run.log at all). selftest.cpp reads the option from
+# __system_argv itself, so drop it from what scummvm_main sees.
+rw("backends/platform/3ds/main.cpp",
+   "\tint res = scummvm_main(argc, argv);",
+   "\t// ultima-3ds: hide --selftest= from ScummVM's option parser\n"
+   "\tint n = 0;\n"
+   "\tfor (int i = 0; i < argc; i++) {\n"
+   "\t\tconst char *s = argv[i], *t = \"--selftest=\";\n"
+   "\t\twhile (*t && *s == *t) { s++; t++; }\n"
+   "\t\tif (i == 0 || *t) argv[n++] = argv[i];\n"
+   "\t}\n"
+   "\targv[n] = nullptr;\n"
+   "\tint res = scummvm_main(n, argv);",
+   "ultima-3ds: hide --selftest= from ScummVM's option parser")
+print("done")
+
