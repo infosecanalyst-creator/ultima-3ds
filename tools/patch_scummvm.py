@@ -839,15 +839,17 @@ print("done")
 # __system_argv itself, so drop it from what scummvm_main sees.
 rw("backends/platform/3ds/main.cpp",
    "\tint res = scummvm_main(argc, argv);",
-   "\t// ultima-3ds: hide --selftest= from ScummVM's option parser\n"
+   "\t// ultima-3ds: hide --selftest= from ScummVM's option parser. A copy:\n"
+   "\t// selftest.cpp reads the original argv (__system_argv) later.\n"
+   "\tstatic char *args[16];\n"
    "\tint n = 0;\n"
-   "\tfor (int i = 0; i < argc; i++) {\n"
+   "\tfor (int i = 0; i < argc && n < 15; i++) {\n"
    "\t\tconst char *s = argv[i], *t = \"--selftest=\";\n"
-   "\t\twhile (*t && *s == *t) { s++; t++; }\n"
-   "\t\tif (i == 0 || *t) argv[n++] = argv[i];\n"
+   "\t\twhile (s && *t && *s == *t) { s++; t++; }\n"
+   "\t\tif (i == 0 || *t) args[n++] = argv[i];\n"
    "\t}\n"
-   "\targv[n] = nullptr;\n"
-   "\tint res = scummvm_main(n, argv);",
-   "ultima-3ds: hide --selftest= from ScummVM's option parser")
+   "\targs[n] = nullptr;\n"
+   "\tint res = scummvm_main(n, args);",
+   "ultima-3ds: hide --selftest= from ScummVM's option parser. A copy")
 print("done")
 

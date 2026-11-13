@@ -273,8 +273,8 @@ static void st_load(const char* script) {
 static void st_init(void) {
     st_on = 0;
     const char* script = NULL;
-    for (int i = 0; i < __system_argc; i++)
-        if (!strncmp(__system_argv[i], "--selftest=", 11)) script = __system_argv[i] + 11;
+    for (int i = 0; i < __system_argc; i++)   // a port may have changed argv: skip empty entries
+        if (__system_argv[i] && !strncmp(__system_argv[i], "--selftest=", 11)) script = __system_argv[i] + 11;
     if (!script) return;
     snprintf(st_dir, sizeof st_dir, "sdmc:/3ds/testagent/results");
     mkdir("sdmc:/3ds/testagent", 0777);
