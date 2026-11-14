@@ -404,11 +404,8 @@ void OSystem_3DS::runPortMenu() {
 	int focus = 0, pressed = -1, chosen = -1;
 	bool confirm = false, redraw = true;
 	std::vector<PadUI::Button> btns;
-	while (aptMainLoop() && !exiting && chosen < 0) {
-		if (sleeping) { delayMillis(50); redraw = true; continue; }
-		hidScanInput();
-		const u32 down = hidKeysDown(), rep = hidKeysDownRepeat();
-		// layout: full-width buttons filling the touch screen below the header (rule 11)
+	// full-width buttons filling the touch screen below the header (rule 11)
+	auto layout = [&]() {
 		btns.clear();
 		if (!confirm) {
 			const int n = (int)items.size(), y0 = 28, gap = 4, h = (240 - 6 - y0 - gap * (n - 1)) / n;
@@ -418,6 +415,12 @@ void OSystem_3DS::runPortMenu() {
 			btns.push_back({ 6, 120, 150, 112, "YES, EXIT", PadUI::Action(), false });
 			btns.push_back({ 164, 120, 150, 112, "NO", PadUI::Action(), false });
 		}
+	};
+	while (aptMainLoop() && !exiting && chosen < 0) {
+		if (sleeping) { delayMillis(50); redraw = true; continue; }
+		hidScanInput();
+		const u32 down = hidKeysDown(), rep = hidKeysDownRepeat();
+		layout();
 		const int n = (int)btns.size();
 		if (focus >= n) focus = n - 1;
 		int hitIdx = -1;
@@ -452,6 +455,14 @@ void OSystem_3DS::runPortMenu() {
 		}
 		if (!redraw) { gspWaitForVBlank(); continue; }
 		redraw = false;
+		{
+			const size_t before = btns.size();
+			const bool wasConfirm = btns.size() == 2 && btns[0].label == "YES, EXIT";
+			layout();                         // the press may have switched pages: draw the new one
+			if (wasConfirm != confirm || before != btns.size()) pressed = -1;
+		}
+		const int nb = (int)btns.size();
+		if (focus >= nb) focus = nb - 1;
 
 		PadUI::Canvas tc = { 400, 240, topPx };
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
@@ -467,7 +478,7 @@ void OSystem_3DS::runPortMenu() {
 			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
 			PadUI::drawText(bc, 8, 62, "Unsaved progress is lost.", PadUI::kGrey, false);
 		}
-		for (int i = 0; i < n; ++i) {
+		for (int i = 0; i < nb; ++i) {
 			PadUI::drawButton(bc, btns[i], i == pressed);
 			if (i == focus) {                 // 2 px gold focus ring
 				bc.frame(btns[i].x - 1, btns[i].y - 1, btns[i].w + 2, btns[i].h + 2, PadUI::kGold);
