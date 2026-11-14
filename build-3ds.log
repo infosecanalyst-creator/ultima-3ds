@@ -1,0 +1,884 @@
+    C++      engines/ultima/detection.o
+    C++      backends/platform/3ds/stereo3ds.o
+    C++      backends/platform/3ds/main.o
+    C++      backends/platform/3ds/allocHeapsOverride.o
+shader.v.pica
+Assembler messages:
+{standard input}: Warning: end of file in comment; newline inserted
+    C++      backends/platform/3ds/sprite.o
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/main.cpp:22:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/stereo3ds.cpp:22:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+    C++      backends/platform/3ds/options.o
+    C++      backends/platform/3ds/osystem.o
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/sprite.cpp:22:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+    C++      backends/platform/3ds/osystem-graphics.o
+    C++      backends/platform/3ds/osystem-audio.o
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/options.cpp:24:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+In file included from ./backends/base-backend.h:25,
+                 from backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/osystem.cpp:27:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/osystem-audio.cpp:22:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/osystem-graphics.cpp:24:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+    C++      backends/platform/3ds/osystem-events.o
+    C++      backends/platform/3ds/osystem-manual.o
+    C++      backends/platform/3ds/osystem-pad.o
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/osystem-events.cpp:24:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+backends/platform/3ds/osystem-events.cpp: In member function 'virtual bool N3DS::OSystem_3DS::notifyEvent(const Common::Event&)':
+backends/platform/3ds/osystem-events.cpp:470:16: warning: enumeration value 'k3DSEventManual' not handled in switch [-Wswitch]
+  470 |         switch ((_3DSCustomEvent)event.customType) {
+      |                ^
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/osystem-pad.cpp:20:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+In file included from ./backends/base-backend.h:25,
+                 from ./backends/platform/3ds/osystem.h:27,
+                 from backends/platform/3ds/osystem-manual.cpp:22:
+./common/system.h:807:22: warning: 'virtual bool OSystem::setGraphicsMode(int, uint)' was hidden [-Woverloaded-virtual=]
+  807 |         virtual bool setGraphicsMode(int mode, uint flags = kGfxModeNoFlags) { return (mode == 0); }
+      |                      ^~~~~~~~~~~~~~~
+./backends/platform/3ds/osystem.h:173:14: note:   by 'bool N3DS::OSystem_3DS::setGraphicsMode(N3DS::GraphicsModeID)'
+  173 |         bool setGraphicsMode(GraphicsModeID modeID);
+      |              ^~~~~~~~~~~~~~~
+    C++      backends/platform/3ds/selftest.o
+    C++      base/test_new_standards.o
+    C++      base/main.o
+    C++      base/commandLine.o
+In file included from backends/platform/3ds/osystem-manual.cpp:18:
+./backends/platform/3ds/manual3ds.h: In member function 'void manual3ds::Manual::draw_top(manual3ds::Canvas&)':
+./backends/platform/3ds/manual3ds.h:316:38: warning: '%d' directive output may be truncated writing between 1 and 8 bytes into a region of size between 4 and 14 [-Wformat-truncation=]
+  316 |         snprintf(pg, sizeof(pg), "%d/%d", m_sec + 1, (int)m_sections.size());
+      |                                      ^~
+./backends/platform/3ds/manual3ds.h:316:34: note: directive argument in the range [0, 59652323]
+  316 |         snprintf(pg, sizeof(pg), "%d/%d", m_sec + 1, (int)m_sections.size());
+      |                                  ^~~~~~~
+./backends/platform/3ds/manual3ds.h:316:17: note: 'snprintf' output between 4 and 21 bytes into a destination of size 16
+  316 |         snprintf(pg, sizeof(pg), "%d/%d", m_sec + 1, (int)m_sections.size());
+      |         ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    C++      base/plugins.o
+    C++      engines/ultima/metaengine.o
+    C++      engines/ultima/shared/conf/xml_node.o
+    C++      engines/ultima/shared/conf/xml_tree.o
+    C++      engines/ultima/shared/engine/events.o
+    C++      engines/ultima/shared/engine/graphics_options.o
+    C++      engines/ultima/ultima4/controllers/alpha_action_controller.o
+    C++      engines/ultima/ultima4/controllers/camp_controller.o
+    C++      engines/ultima/ultima4/controllers/combat_controller.o
+    C++      engines/ultima/ultima4/controllers/controller.o
+    C++      engines/ultima/ultima4/controllers/game_controller.o
+    C++      engines/ultima/ultima4/controllers/inn_controller.o
+    C++      engines/ultima/ultima4/controllers/intro_controller.o
+    C++      engines/ultima/ultima4/controllers/key_handler_controller.o
+    C++      engines/ultima/ultima4/controllers/menu_controller.o
+    C++      engines/ultima/ultima4/controllers/read_choice_controller.o
+    C++      engines/ultima/ultima4/controllers/read_dir_controller.o
+    C++      engines/ultima/ultima4/controllers/read_int_controller.o
+    C++      engines/ultima/ultima4/controllers/read_player_controller.o
+    C++      engines/ultima/ultima4/controllers/read_string_controller.o
+    C++      engines/ultima/ultima4/controllers/reagents_menu_controller.o
+    C++      engines/ultima/ultima4/controllers/wait_controller.o
+    C++      engines/ultima/ultima4/controllers/ztats_controller.o
+    C++      engines/ultima/ultima4/conversation/conversation.o
+    C++      engines/ultima/ultima4/conversation/dialogueloader.o
+    C++      engines/ultima/ultima4/conversation/dialogueloader_hw.o
+    C++      engines/ultima/ultima4/conversation/dialogueloader_lb.o
+    C++      engines/ultima/ultima4/conversation/dialogueloader_tlk.o
+    C++      engines/ultima/ultima4/core/lzw/hash.o
+    C++      engines/ultima/ultima4/core/lzw/lzw.o
+    C++      engines/ultima/ultima4/core/lzw/u4decode.o
+    C++      engines/ultima/ultima4/core/config.o
+    C++      engines/ultima/ultima4/core/debugger.o
+    C++      engines/ultima/ultima4/core/debugger_actions.o
+    C++      engines/ultima/ultima4/core/settings.o
+    C++      engines/ultima/ultima4/core/utils.o
+    C++      engines/ultima/ultima4/events/event_handler.o
+    C++      engines/ultima/ultima4/events/timed_event_mgr.o
+    C++      engines/ultima/ultima4/filesys/rle.o
+    C++      engines/ultima/ultima4/filesys/savegame.o
+    C++      engines/ultima/ultima4/filesys/u4file.o
+    C++      engines/ultima/ultima4/game/armor.o
+    C++      engines/ultima/ultima4/game/aura.o
+    C++      engines/ultima/ultima4/game/codex.o
+    C++      engines/ultima/ultima4/game/context.o
+    C++      engines/ultima/ultima4/game/creature.o
+    C++      engines/ultima/ultima4/game/death.o
+    C++      engines/ultima/ultima4/game/game.o
+    C++      engines/ultima/ultima4/game/item.o
+    C++      engines/ultima/ultima4/game/moongate.o
+    C++      engines/ultima/ultima4/game/names.o
+    C++      engines/ultima/ultima4/game/object.o
+    C++      engines/ultima/ultima4/game/person.o
+    C++      engines/ultima/ultima4/game/player.o
+    C++      engines/ultima/ultima4/game/portal.o
+    C++      engines/ultima/ultima4/game/script.o
+    C++      engines/ultima/ultima4/game/spell.o
+    C++      engines/ultima/ultima4/game/weapon.o
+    C++      engines/ultima/ultima4/gfx/image.o
+    C++      engines/ultima/ultima4/gfx/imageloader.o
+    C++      engines/ultima/ultima4/gfx/imageloader_fmtowns.o
+    C++      engines/ultima/ultima4/gfx/imageloader_u4.o
+    C++      engines/ultima/ultima4/gfx/imagemgr.o
+    C++      engines/ultima/ultima4/gfx/scale.o
+    C++      engines/ultima/ultima4/gfx/screen.o
+    C++      engines/ultima/ultima4/map/annotation.o
+    C++      engines/ultima/ultima4/map/city.o
+    C++      engines/ultima/ultima4/map/direction.o
+    C++      engines/ultima/ultima4/map/dungeon.o
+    C++      engines/ultima/ultima4/map/map_tile.o
+    C++      engines/ultima/ultima4/map/movement.o
+    C++      engines/ultima/ultima4/map/shrine.o
+    C++      engines/ultima/ultima4/map/location.o
+    C++      engines/ultima/ultima4/map/map.o
+    C++      engines/ultima/ultima4/map/maploader.o
+    C++      engines/ultima/ultima4/map/mapmgr.o
+    C++      engines/ultima/ultima4/map/tile.o
+    C++      engines/ultima/ultima4/map/tileanim.o
+    C++      engines/ultima/ultima4/map/tilemap.o
+    C++      engines/ultima/ultima4/map/tileset.o
+    C++      engines/ultima/ultima4/sound/music.o
+    C++      engines/ultima/ultima4/sound/sound.o
+    C++      engines/ultima/ultima4/views/dungeonview.o
+    C++      engines/ultima/ultima4/views/imageview.o
+    C++      engines/ultima/ultima4/views/menu.o
+    C++      engines/ultima/ultima4/views/menuitem.o
+    C++      engines/ultima/ultima4/views/stats.o
+    C++      engines/ultima/ultima4/views/textview.o
+    C++      engines/ultima/ultima4/views/tileview.o
+    C++      engines/ultima/ultima4/views/view.o
+    C++      engines/ultima/ultima4/metaengine.o
+    C++      engines/ultima/ultima4/pad3ds_u4.o
+    C++      engines/ultima/ultima4/ultima4.o
+    C++      engines/ultima/nuvie/metaengine.o
+    C++      engines/ultima/nuvie/pad3ds_u6.o
+    C++      engines/ultima/nuvie/nuvie.o
+    C++      engines/ultima/nuvie/actors/actor.o
+    C++      engines/ultima/nuvie/actors/actor_manager.o
+    C++      engines/ultima/nuvie/actors/md_actor.o
+    C++      engines/ultima/nuvie/actors/se_actor.o
+    C++      engines/ultima/nuvie/actors/u6_actor.o
+    C++      engines/ultima/nuvie/actors/wou_actor.o
+    C++      engines/ultima/nuvie/conf/configuration.o
+    C++      engines/ultima/nuvie/conf/misc.o
+    C++      engines/ultima/nuvie/core/anim_manager.o
+    C++      engines/ultima/nuvie/core/book.o
+    C++      engines/ultima/nuvie/core/converse.o
+    C++      engines/ultima/nuvie/core/converse_interpret.o
+    C++      engines/ultima/nuvie/core/converse_speech.o
+    C++      engines/ultima/nuvie/core/cursor.o
+    C++      engines/ultima/nuvie/core/debug.o
+    C++      engines/ultima/nuvie/core/effect.o
+    C++      engines/ultima/nuvie/core/effect_manager.o
+    C++      engines/ultima/nuvie/core/egg_manager.o
+    C++      engines/ultima/nuvie/core/events.o
+    C++      engines/ultima/nuvie/core/game.o
+    C++      engines/ultima/nuvie/core/game_clock.o
+    C++      engines/ultima/nuvie/core/look.o
+    C++      engines/ultima/nuvie/core/magic.o
+    C++      engines/ultima/nuvie/core/map.o
+    C++      engines/ultima/nuvie/core/nuvie_defs.o
+    C++      engines/ultima/nuvie/core/obj.o
+    C++      engines/ultima/nuvie/core/obj_manager.o
+    C++      engines/ultima/nuvie/core/party.o
+    C++      engines/ultima/nuvie/core/player.o
+    C++      engines/ultima/nuvie/core/tile_manager.o
+    C++      engines/ultima/nuvie/core/timed_event.o
+    C++      engines/ultima/nuvie/core/weather.o
+    C++      engines/ultima/nuvie/files/utils.o
+    C++      engines/ultima/nuvie/files/nuvie_bmp_file.o
+    C++      engines/ultima/nuvie/files/nuvie_file_list.o
+    C++      engines/ultima/nuvie/files/nuvie_io.o
+    C++      engines/ultima/nuvie/files/nuvie_io_file.o
+    C++      engines/ultima/nuvie/files/tmx_map.o
+    C++      engines/ultima/nuvie/files/u6_bmp.o
+    C++      engines/ultima/nuvie/files/u6_lib_n.o
+    C++      engines/ultima/nuvie/files/u6_lzw.o
+    C++      engines/ultima/nuvie/files/u6_shape.o
+    C++      engines/ultima/nuvie/fonts/bmp_font.o
+    C++      engines/ultima/nuvie/fonts/conv_font.o
+    C++      engines/ultima/nuvie/fonts/font.o
+    C++      engines/ultima/nuvie/fonts/font_manager.o
+    C++      engines/ultima/nuvie/fonts/u6_font.o
+    C++      engines/ultima/nuvie/fonts/wou_font.o
+    C++      engines/ultima/nuvie/gui/gui.o
+    C++      engines/ultima/nuvie/gui/gui_area.o
+    C++      engines/ultima/nuvie/gui/gui_button.o
+    C++      engines/ultima/nuvie/gui/gui_console.o
+    C++      engines/ultima/nuvie/gui/gui_dialog.o
+    C++      engines/ultima/nuvie/gui/gui_drag_manager.o
+    C++      engines/ultima/nuvie/gui/gui_font.o
+    C++      engines/ultima/nuvie/gui/gui_load_image.o
+    C++      engines/ultima/nuvie/gui/gui_scroller.o
+    C++      engines/ultima/nuvie/gui/gui_scroll_bar.o
+    C++      engines/ultima/nuvie/gui/gui_text.o
+    C++      engines/ultima/nuvie/gui/gui_text_input.o
+    C++      engines/ultima/nuvie/gui/gui_text_toggle_button.o
+    C++      engines/ultima/nuvie/gui/gui_yes_no_dialog.o
+    C++      engines/ultima/nuvie/gui/widgets/gui_widget.o
+    C++      engines/ultima/nuvie/gui/widgets/background.o
+    C++      engines/ultima/nuvie/gui/widgets/command_bar.o
+    C++      engines/ultima/nuvie/gui/widgets/command_bar_new_ui.o
+    C++      engines/ultima/nuvie/gui/widgets/console.o
+    C++      engines/ultima/nuvie/gui/widgets/msg_scroll.o
+    C++      engines/ultima/nuvie/gui/widgets/msg_scroll_new_ui.o
+    C++      engines/ultima/nuvie/gui/widgets/converse_gump.o
+    C++      engines/ultima/nuvie/gui/widgets/converse_gump_wou.o
+engines/ultima/nuvie/gui/widgets/msg_scroll_new_ui.cpp: In member function 'virtual void Ultima::Nuvie::MsgScrollNewUI::display_string(const Common::String&, Ultima::Nuvie::Font*, bool)':
+engines/ultima/nuvie/gui/widgets/msg_scroll_new_ui.cpp:110:41: warning: comparison is always true due to limited range of data type [-Wtype-limits]
+  110 |         for (i = 0, pos = s.size(); pos >= 0; pos--, i++) {
+      |                                     ~~~~^~~~
+    C++      engines/ultima/nuvie/gui/widgets/fps_counter.o
+    C++      engines/ultima/nuvie/gui/widgets/map_window.o
+    C++      engines/ultima/nuvie/keybinding/keys.o
+    C++      engines/ultima/nuvie/keybinding/key_actions.o
+    C++      engines/ultima/nuvie/keybinding/key_help_dialog.o
+    C++      engines/ultima/nuvie/menus/asset_viewer_dialog.o
+    C++      engines/ultima/nuvie/menus/audio_dialog.o
+    C++      engines/ultima/nuvie/menus/cheats_dialog.o
+    C++      engines/ultima/nuvie/menus/gameplay_dialog.o
+    C++      engines/ultima/nuvie/menus/game_menu_dialog.o
+    C++      engines/ultima/nuvie/menus/input_dialog.o
+    C++      engines/ultima/nuvie/menus/video_dialog.o
+    C++      engines/ultima/nuvie/misc/sdl_compat.o
+    C++      engines/ultima/nuvie/misc/iavl_tree.o
+    C++      engines/ultima/nuvie/misc/u6_line_walker.o
+    C++      engines/ultima/nuvie/misc/u6_list.o
+    C++      engines/ultima/nuvie/misc/u6_misc.o
+    C++      engines/ultima/nuvie/pathfinder/actor_path_finder.o
+    C++      engines/ultima/nuvie/pathfinder/astar_path.o
+    C++      engines/ultima/nuvie/pathfinder/combat_path_finder.o
+    C++      engines/ultima/nuvie/pathfinder/dir_finder.o
+    C++      engines/ultima/nuvie/pathfinder/party_path_finder.o
+    C++      engines/ultima/nuvie/pathfinder/path.o
+    C++      engines/ultima/nuvie/pathfinder/path_finder.o
+    C++      engines/ultima/nuvie/pathfinder/sched_path_finder.o
+    C++      engines/ultima/nuvie/pathfinder/seek_path.o
+    C++      engines/ultima/nuvie/pathfinder/u6_astar_path.o
+    C++      engines/ultima/nuvie/portraits/portrait.o
+    C++      engines/ultima/nuvie/portraits/portrait_md.o
+    C++      engines/ultima/nuvie/portraits/portrait_se.o
+    C++      engines/ultima/nuvie/portraits/portrait_u6.o
+    C++      engines/ultima/nuvie/save/save_game.o
+    C++      engines/ultima/nuvie/screen/dither.o
+    C++      engines/ultima/nuvie/screen/game_palette.o
+    C++      engines/ultima/nuvie/screen/screen.o
+    C++      engines/ultima/nuvie/screen/surface.o
+    C++      engines/ultima/nuvie/script/script.o
+    C++      engines/ultima/nuvie/script/script_actor.o
+    C++      engines/ultima/nuvie/script/script_cutscene.o
+    C++      engines/ultima/nuvie/sound/adlib_sfx_manager.o
+    C++      engines/ultima/nuvie/sound/custom_sfx_manager.o
+    C++      engines/ultima/nuvie/sound/mididrv_m_adlib.o
+    C++      engines/ultima/nuvie/sound/mididrv_m_mt32.o
+    C++      engines/ultima/nuvie/sound/midiparser_m.o
+    C++      engines/ultima/nuvie/sound/origin_fx_adib_driver.o
+    C++      engines/ultima/nuvie/sound/pc_speaker_sfx_manager.o
+    C++      engines/ultima/nuvie/sound/song.o
+    C++      engines/ultima/nuvie/sound/song_adplug.o
+    C++      engines/ultima/nuvie/sound/song_filename.o
+    C++      engines/ultima/nuvie/sound/sound_manager.o
+    C++      engines/ultima/nuvie/sound/towns_sfx_manager.o
+    C++      engines/ultima/nuvie/sound/adplug/adplug_player.o
+    C++      engines/ultima/nuvie/sound/adplug/emu_opl.o
+    C++      engines/ultima/nuvie/sound/adplug/fm_opl.o
+    C++      engines/ultima/nuvie/sound/adplug/mid.o
+    C++      engines/ultima/nuvie/sound/adplug/opl_class.o
+    C++      engines/ultima/nuvie/sound/adplug/u6m.o
+    C++      engines/ultima/nuvie/sound/decoder/adlib_sfx_stream.o
+    C++      engines/ultima/nuvie/sound/decoder/fm_towns_decoder_stream.o
+    C++      engines/ultima/nuvie/sound/decoder/pc_speaker.o
+    C++      engines/ultima/nuvie/sound/decoder/pc_speaker_stream.o
+    C++      engines/ultima/nuvie/sound/decoder/random_collection_audio_stream.o
+    C++      engines/ultima/nuvie/sound/decoder/u6_adplug_decoder_stream.o
+    C++      engines/ultima/nuvie/usecode/u6_usecode.o
+    C++      engines/ultima/nuvie/usecode/usecode.o
+    C++      engines/ultima/nuvie/views/actor_view.o
+    C++      engines/ultima/nuvie/views/container_view_gump.o
+    C++      engines/ultima/nuvie/views/container_widget.o
+    C++      engines/ultima/nuvie/views/container_widget_gump.o
+    C++      engines/ultima/nuvie/views/doll_view_gump.o
+    C++      engines/ultima/nuvie/views/doll_widget.o
+    C++      engines/ultima/nuvie/views/draggable_view.o
+    C++      engines/ultima/nuvie/views/inventory_view.o
+    C++      engines/ultima/nuvie/views/inventory_widget.o
+    C++      engines/ultima/nuvie/views/map_editor_view.o
+    C++      engines/ultima/nuvie/views/md_sky_strip_widget.o
+    C++      engines/ultima/nuvie/views/party_view.o
+    C++      engines/ultima/nuvie/views/portrait_view.o
+    C++      engines/ultima/nuvie/views/portrait_view_gump.o
+    C++      engines/ultima/nuvie/views/scroll_view_gump.o
+    C++      engines/ultima/nuvie/views/scroll_widget_gump.o
+    C++      engines/ultima/nuvie/views/sign_view_gump.o
+    C++      engines/ultima/nuvie/views/spell_view.o
+    C++      engines/ultima/nuvie/views/spell_view_gump.o
+    C++      engines/ultima/nuvie/views/sun_moon_ribbon.o
+    C++      engines/ultima/nuvie/views/sun_moon_strip_widget.o
+    C++      engines/ultima/nuvie/views/view.o
+    C++      engines/ultima/nuvie/views/view_manager.o
+    C++      engines/achievements.o
+    C++      engines/advancedDetector.o
+    C++      engines/dialogs.o
+    C++      engines/engine.o
+    C++      engines/game.o
+    C++      engines/metaengine.o
+    C++      engines/obsolete.o
+    C++      engines/savestate.o
+    C++      gui/about.o
+    C++      gui/browser.o
+    C++      gui/chooser.o
+    C++      gui/console.o
+    C++      gui/debugger.o
+    C++      gui/dialog.o
+    C++      gui/dump-all-dialogs.o
+    C++      gui/editgamedialog.o
+    C++      gui/error.o
+    C++      gui/EventRecorder.o
+    C++      gui/filebrowser-dialog.o
+    C++      gui/gui-manager.o
+    C++      gui/helpdialog.o
+    C++      gui/imagealbum-dialog.o
+    C++      gui/launcher.o
+    C++      gui/massadd.o
+    C++      gui/message.o
+    C++      gui/MetadataParser.o
+    C++      gui/object.o
+    C++      gui/options.o
+    C++      gui/predictivedialog.o
+    C++      gui/printing-dialog.o
+    C++      gui/saveload.o
+    C++      gui/saveload-dialog.o
+    C++      gui/shaderbrowser-dialog.o
+    C++      gui/textviewer.o
+    C++      gui/themebrowser.o
+    C++      gui/ThemeEngine.o
+gui/ThemeEngine.cpp: In member function 'void GUI::ThemeEngine::setActiveCursor(CursorType)':
+gui/ThemeEngine.cpp:1724:14: warning: comparison is always false due to limited range of data type [-Wtype-limits]
+ 1724 |     if (type < 0 || type >= kCursorMax || !_cursors[type].surface) {
+      |         ~~~~~^~~
+    C++      gui/ThemeEval.o
+    C++      gui/ThemeLayout.o
+    C++      gui/ThemeParser.o
+    C++      gui/Tooltip.o
+    C++      gui/unknown-game-dialog.o
+    C++      gui/widget.o
+    C++      gui/animation/Animation.o
+    C++      gui/animation/FluidScroll.o
+    C++      gui/animation/RepeatAnimationWrapper.o
+    C++      gui/animation/SequenceAnimationComposite.o
+    C++      gui/widgets/editable.o
+    C++      gui/widgets/edittext.o
+    C++      gui/widgets/grid.o
+    C++      gui/widgets/groupedlist.o
+    C++      gui/widgets/list.o
+    C++      gui/widgets/popup.o
+    C++      gui/widgets/richtext.o
+    C++      gui/widgets/scrollbar.o
+    C++      gui/widgets/scrollcontainer.o
+    C++      gui/widgets/tab.o
+    C++      backends/base-backend.o
+    C++      backends/modular-backend.o
+    C++      backends/audiocd/audiocd-stream.o
+    C++      backends/audiocd/default/default-audiocd.o
+    C++      backends/events/default/default-events.o
+    C++      backends/fs/abstract-fs.o
+    C++      backends/fs/stdiostream.o
+    C++      backends/keymapper/action.o
+    C++      backends/keymapper/hardware-input.o
+    C++      backends/keymapper/input-watcher.o
+    C++      backends/keymapper/keymap.o
+    C++      backends/keymapper/keymapper.o
+    C++      backends/keymapper/remap-widget.o
+    C++      backends/keymapper/standard-actions.o
+    C++      backends/keymapper/virtual-mouse.o
+    C++      backends/log/log.o
+    C++      backends/midi/alsa.o
+    C++      backends/midi/dmedia.o
+    C++      backends/midi/seq.o
+    C++      backends/midi/sndio.o
+    C++      backends/midi/stmidi.o
+    C++      backends/midi/timidity.o
+    C++      backends/saves/savefile.o
+    C++      backends/saves/default/default-saves.o
+    C++      backends/timer/default/default-timer.o
+    C++      backends/vkeybd/image-map.o
+    C++      backends/vkeybd/polygon.o
+    C++      backends/vkeybd/virtual-keyboard.o
+    C++      backends/vkeybd/virtual-keyboard-gui.o
+    C++      backends/vkeybd/virtual-keyboard-parser.o
+backends/vkeybd/virtual-keyboard.cpp: In member function 'void Common::VirtualKeyboard::KeyPressQueue::insertKey(Common::KeyState)':
+backends/vkeybd/virtual-keyboard.cpp:332:33: warning: comparison is always true due to limited range of data type [-Wtype-limits]
+  332 |                 if (key.keycode >= 0 && key.keycode < keycodeDescTableSize)
+      |                     ~~~~~~~~~~~~^~~~
+    C++      backends/fs/posix/posix-fs.o
+    C++      backends/fs/posix/posix-fs-factory.o
+    C++      backends/fs/posix/posix-iostream.o
+    C++      backends/fs/posix-drives/posix-drives-fs.o
+    C++      backends/fs/posix-drives/posix-drives-fs-factory.o
+    C++      backends/fs/chroot/chroot-fs-factory.o
+    C++      backends/fs/chroot/chroot-fs.o
+    C++      backends/plugins/posix/posix-provider.o
+    C++      backends/saves/posix/posix-saves.o
+    C++      backends/taskbar/unity/unity-taskbar.o
+    C++      backends/dialogs/gtk/gtk-dialogs.o
+    C++      backends/mutex/3ds/3ds-mutex.o
+    C++      backends/plugins/3ds/3ds-provider.o
+    C++      video/3do_decoder.o
+    C++      video/4xm_decoder.o
+    C++      video/4xm_utils.o
+    C++      video/asf.o
+    C++      video/asf_decoder.o
+    C++      video/avi_decoder.o
+    C++      video/dxa_decoder.o
+    C++      video/flic_decoder.o
+    C++      video/mpegps_decoder.o
+    C++      video/mve_decoder.o
+    C++      video/paco_decoder.o
+    C++      video/psx_decoder.o
+    C++      video/qt_decoder.o
+    C++      video/qtvr_decoder.o
+    C++      video/smk_decoder.o
+In file included from ./common/stream.h:25,
+                 from ./common/formats/quicktime.h:36,
+                 from ./audio/decoders/quicktime_intern.h:32,
+                 from ./video/qt_decoder.h:33,
+                 from video/qtvr_decoder.cpp:30:
+In member function 'uint16 Common::ReadStream::readUint16BE()',
+    inlined from 'int16 Common::ReadStream::readSint16BE()' at ./common/stream.h:580:29,
+    inlined from 'float Video::readAppleFloatField(Common::SeekableReadStream*)' at video/qtvr_decoder.cpp:65:32:
+./common/endian.h:364:44: warning: 'val' may be used uninitialized [-Wmaybe-uninitialized]
+  364 |         #define FROM_BE_16(a) SWAP_BYTES_16(a)
+      |                               ~~~~~~~~~~~~~^~~
+./common/stream.h:504:24: note: in expansion of macro 'FROM_BE_16'
+  504 |                 return FROM_BE_16(val);
+      |                        ^~~~~~~~~~
+./common/stream.h: In function 'float Video::readAppleFloatField(Common::SeekableReadStream*)':
+./common/stream.h:502:24: note: 'val' declared here
+  502 |                 uint16 val;
+      |                        ^~~
+In member function 'uint16 Common::ReadStream::readUint16BE()',
+    inlined from 'int16 Common::ReadStream::readSint16BE()' at ./common/stream.h:580:29,
+    inlined from 'float Video::readAppleFloatField(Common::SeekableReadStream*)' at video/qtvr_decoder.cpp:65:32:
+./common/endian.h:364:44: warning: 'val' may be used uninitialized [-Wmaybe-uninitialized]
+  364 |         #define FROM_BE_16(a) SWAP_BYTES_16(a)
+      |                               ~~~~~~~~~~~~~^~~
+./common/stream.h:504:24: note: in expansion of macro 'FROM_BE_16'
+  504 |                 return FROM_BE_16(val);
+      |                        ^~~~~~~~~~
+./common/stream.h: In function 'float Video::readAppleFloatField(Common::SeekableReadStream*)':
+./common/stream.h:502:24: note: 'val' declared here
+  502 |                 uint16 val;
+      |                        ^~~
+    C++      video/subtitles.o
+    C++      video/video_decoder.o
+    C++      video/bink_decoder.o
+    C++      image/ani.o
+    C++      image/bmp.o
+    C++      image/cel_3do.o
+    C++      image/cgbi.o
+    C++      image/cicn.o
+    C++      image/icocur.o
+    C++      image/iff.o
+    C++      image/jpeg.o
+    C++      image/neo.o
+    C++      image/pcx.o
+    C++      image/pict.o
+    C++      image/png.o
+    C++      image/scr.o
+    C++      image/tga.o
+    C++      image/xbm.o
+    C++      image/codecs/bmp_raw.o
+    C++      image/codecs/cinepak.o
+    C++      image/codecs/codec.o
+    C++      image/codecs/dither.o
+    C++      image/codecs/hlz.o
+    C++      image/codecs/msrle.o
+    C++      image/codecs/msrle4.o
+    C++      image/codecs/msvideo1.o
+    C++      image/codecs/qtrle.o
+    C++      image/codecs/rpza.o
+    C++      image/codecs/smc.o
+    C++      image/codecs/mjpeg.o
+    C++      graphics/big5.o
+    C++      graphics/blit/blit.o
+    C++      graphics/blit/blit-alpha.o
+    C++      graphics/blit/blit-fast.o
+    C++      graphics/blit/blit-generic.o
+    C++      graphics/blit/blit-scale.o
+    C++      graphics/color_quantizer.o
+    C++      graphics/cursorman.o
+    C++      graphics/dirtyrects.o
+    C++      graphics/font.o
+    C++      graphics/fontman.o
+    C++      graphics/fonts/amigafont.o
+    C++      graphics/fonts/bdf.o
+    C++      graphics/fonts/bgifont.o
+    C++      graphics/fonts/consolefont.o
+    C++      graphics/fonts/dosfont.o
+    C++      graphics/fonts/freetype.o
+    C++      graphics/fonts/macfont.o
+    C++      graphics/fonts/newfont_big.o
+    C++      graphics/fonts/newfont.o
+    C++      graphics/fonts/ttf.o
+    C++      graphics/fonts/winfont.o
+    C++      graphics/framelimiter.o
+    C++      graphics/hotspot_renderer.o
+    C++      graphics/image-archive.o
+    C++      graphics/korfont.o
+    C++      graphics/larryScale.o
+    C++      graphics/maccursor.o
+In destructor 'virtual Graphics::FontKoreanWansung::~FontKoreanWansung()',
+    inlined from 'virtual Graphics::FontKoreanWansung::~FontKoreanWansung()' at graphics/korfont.cpp:388:1,
+    inlined from 'static Graphics::FontKorean* Graphics::FontKorean::createFont(const char*)' at graphics/korfont.cpp:53:9:
+graphics/korfont.cpp:388:1: warning: array subscript 'Graphics::FontKoreanWansung[0]' is partly outside array bounds of 'unsigned char [44]' [-Warray-bounds=]
+  388 | }
+      | ^
+graphics/korfont.cpp: In static member function 'static Graphics::FontKorean* Graphics::FontKorean::createFont(const char*)':
+graphics/korfont.cpp:50:33: note: object of size 44 allocated by 'operator new'
+   50 |         ret = new FontKoreanSVM();
+      |                                 ^
+    C++      graphics/macgui/datafiles.o
+    C++      graphics/macgui/macbutton.o
+    C++      graphics/macgui/macdialog.o
+    C++      graphics/macgui/macfontmanager.o
+    C++      graphics/macgui/macmenu.o
+    C++      graphics/macgui/macpopupmenu.o
+    C++      graphics/macgui/mactext.o
+    C++      graphics/macgui/mactext-canvas.o
+    C++      graphics/macgui/mactext-md.o
+    C++      graphics/macgui/mactextwindow.o
+    C++      graphics/macgui/macwidget.o
+    C++      graphics/macgui/macwindow.o
+    C++      graphics/macgui/macwindowborder.o
+    C++      graphics/macgui/macwindowmanager.o
+    C++      graphics/managed_surface.o
+    C++      graphics/nine_patch.o
+    C++      graphics/opengl/context.o
+    C++      graphics/opengl/debug.o
+    C++      graphics/opengl/shader.o
+    C++      graphics/opengl/texture.o
+    C++      graphics/palette.o
+    C++      graphics/pixelformat.o
+    C++      graphics/pm5544.o
+    C++      graphics/primitives.o
+    C++      graphics/riscoscursor.o
+    C++      graphics/renderer.o
+    C++      graphics/scalerplugin.o
+    C++      graphics/scaler/downscaler.o
+    C++      graphics/scaler/thumbnail_intern.o
+    C++      graphics/screen.o
+    C++      graphics/scaler/normal.o
+    C++      graphics/surface.o
+    C++      graphics/svg.o
+    C++      graphics/transform_struct.o
+    C++      graphics/transform_tools.o
+    C++      graphics/thumbnail.o
+    C++      graphics/VectorRenderer.o
+    C++      graphics/VectorRendererSpec.o
+    C++      graphics/wincursor.o
+    C++      graphics/yuv_to_rgb.o
+    C++      graphics/scaler/aspect.o
+    C++      audio/adlib.o
+    C++      audio/adlib_ctmidi.o
+    C++      audio/adlib_hmisos.o
+    C++      audio/adlib_ms.o
+    C++      audio/audiostream.o
+    C++      audio/casio.o
+    C++      audio/chip.o
+    C++      audio/cms.o
+    C++      audio/fmopl.o
+    C++      audio/mac_plugin.o
+    C++      audio/mididrv.o
+    C++      audio/mididrv_ms.o
+    C++      audio/midiparser_hmp.o
+    C++      audio/midiparser_qt.o
+    C++      audio/midiparser_smf.o
+    C++      audio/midiparser_xmidi.o
+    C++      audio/midiparser.o
+    C++      audio/midiplayer.o
+    C++      audio/miles_adlib.o
+    C++      audio/miles_midi.o
+    C++      audio/mixer.o
+    C++      audio/mpu401.o
+    C++      audio/mt32gm.o
+    C++      audio/musicplugin.o
+    C++      audio/null.o
+    C++      audio/rate.o
+    C++      audio/sid.o
+    C++      audio/ym2149.o
+    C++      audio/timestamp.o
+    C++      audio/decoders/3do.o
+    C++      audio/decoders/aac.o
+    C++      audio/decoders/adpcm.o
+    C++      audio/decoders/aiff.o
+    C++      audio/decoders/apc.o
+    C++      audio/decoders/flac.o
+    C++      audio/decoders/g711.o
+    C++      audio/decoders/iff_sound.o
+    C++      audio/decoders/mac_snd.o
+    C++      audio/decoders/mac_snd_mace.o
+    C++      audio/decoders/mp3.o
+    C++      audio/decoders/qdm2.o
+    C++      audio/decoders/quicktime.o
+    C++      audio/decoders/raw.o
+    C++      audio/decoders/voc.o
+    C++      audio/decoders/vorbis.o
+    C++      audio/decoders/wave.o
+    C++      audio/decoders/wma.o
+    C++      audio/decoders/xa.o
+    C++      audio/decoders/xan_dpcm.o
+    C++      audio/mac/halestorm.o
+    C++      audio/mods/universaltracker.o
+    C++      audio/mods/infogrames.o
+    C++      audio/mods/maxtrax.o
+    C++      audio/mods/mod_xm_s3m.o
+    C++      audio/mods/module.o
+    C++      audio/mods/module_mod_xm_s3m.o
+    C++      audio/mods/protracker.o
+    C++      audio/mods/paula.o
+    C++      audio/mods/rjp1.o
+    C++      audio/mods/soundfx.o
+    C++      audio/mods/tfmx.o
+    C++      audio/mods/desktoptracker.o
+    C++      audio/softsynth/cms.o
+    C++      audio/softsynth/opl/dbopl.o
+    C++      audio/softsynth/opl/dosbox.o
+    C++      audio/softsynth/opl/mame.o
+    C++      audio/softsynth/appleiigs.o
+    C++      audio/softsynth/fluidsynth.o
+    C++      audio/softsynth/eas.o
+    C++      audio/softsynth/pcspk.o
+    C++      audio/softsynth/ay8912.o
+    C++      audio/softsynth/opl/nuked.o
+    C++      audio/softsynth/ym2149.o
+    C++      math/aabb.o
+    C++      math/angle.o
+    C++      math/cosinetables.o
+    C++      math/dct.o
+    C++      math/fft.o
+    C++      math/frustum.o
+    C++      math/glmath.o
+    C++      math/line2d.o
+    C++      math/line3d.o
+    C++      math/matrix3.o
+    C++      math/matrix4.o
+    C++      math/mdct.o
+    C++      math/plane.o
+    C++      math/quat.o
+    C++      math/ray.o
+    C++      math/rdft.o
+    C++      math/rect2d.o
+    C++      math/sinetables.o
+    C++      math/sinewindows.o
+    C++      math/vector2d.o
+    C++      math/vector3d.o
+    C++      math/vector4d.o
+    C++      common/pad3ds.o
+    C++      common/stereo3ds.o
+    C++      common/archive.o
+    C++      common/base64.o
+    C++      common/btea.o
+    C++      common/concatstream.o
+    C++      common/config-manager.o
+    C++      common/coroutines.o
+    C++      common/dbcs-str.o
+    C++      common/debug.o
+    C++      common/engine_data.o
+    C++      common/error.o
+    C++      common/events.o
+    C++      common/file.o
+    C++      common/fs.o
+    C++      common/gui_options.o
+    C++      common/hashmap.o
+    C++      common/language.o
+    C++      common/localization.o
+    C++      common/macresman.o
+    C++      common/memory.o
+    C++      common/memorypool.o
+    C++      common/md5.o
+    C++      common/mutex.o
+    C++      common/osd_message_queue.o
+    C++      common/path.o
+    C++      common/platform.o
+    C++      common/printman.o
+    C++      common/punycode.o
+    C++      common/random.o
+    C++      common/rational.o
+    C++      common/rendermode.o
+    C++      common/rotationmode.o
+    C++      common/str.o
+    C++      common/stream.o
+    C++      common/streamdebug.o
+    C++      common/str-base.o
+    C++      common/str-enc.o
+    C++      common/encodings/singlebyte.o
+    C++      common/system.o
+    C++      common/textconsole.o
+    C++      common/text-to-speech.o
+    C++      common/tokenizer.o
+    C++      common/translation.o
+    C++      common/unicode-bidi.o
+    C++      common/ustr.o
+    C++      common/util.o
+    C++      common/xpfloat.o
+    C++      common/zip-set.o
+    C++      common/std/std.o
+    C++      common/compression/clickteam.o
+    C++      common/compression/dcl.o
+    C++      common/compression/gentee_installer.o
+    C++      common/compression/gzio.o
+    C++      common/compression/installshield_cab.o
+    C++      common/compression/installshieldv3_archive.o
+    C++      common/compression/packice.o
+    C++      common/compression/powerpacker.o
+    C++      common/compression/rnc_deco.o
+    C++      common/compression/stuffit.o
+    C++      common/compression/unarj.o
+    C++      common/compression/unzip.o
+    C++      common/compression/vise.o
+    C++      common/compression/zlib.o
+    C++      common/formats/cue.o
+    C++      common/formats/disk_image.o
+    C++      common/formats/formatinfo.o
+    C++      common/formats/iff_container.o
+    C++      common/formats/ini-file.o
+    C++      common/formats/json.o
+    C++      common/formats/markdown.o
+    C++      common/formats/po_parser.o
+    C++      common/formats/prodos.o
+    C++      common/formats/quicktime.o
+    C++      common/formats/spectrum_tape.o
+    C++      common/formats/winexe.o
+    C++      common/formats/winexe_ne.o
+    C++      common/formats/winexe_pe.o
+    C++      common/formats/xmlparser.o
+    C++      common/lua/double_serialization.o
+    C++      common/lua/lapi.o
+    C++      common/lua/lauxlib.o
+    C++      common/lua/lbaselib.o
+    C++      common/lua/lcode.o
+    C++      common/lua/ldblib.o
+    C++      common/lua/ldebug.o
+    C++      common/lua/ldo.o
+    C++      common/lua/lfunc.o
+    C++      common/lua/lgc.o
+    C++      common/lua/linit.o
+    C++      common/lua/liolib.o
+    C++      common/lua/llex.o
+    C++      common/lua/lmathlib.o
+    C++      common/lua/lmem.o
+    C++      common/lua/loadlib.o
+    C++      common/lua/lobject.o
+    C++      common/lua/lopcodes.o
+    C++      common/lua/loslib.o
+    C++      common/lua/lparser.o
+    C++      common/lua/lstate.o
+    C++      common/lua/lstring.o
+    C++      common/lua/lstrlib.o
+    C++      common/lua/ltable.o
+    C++      common/lua/ltablib.o
+    C++      common/lua/ltm.o
+    C++      common/lua/lua_persist.o
+    C++      common/lua/lua_persistence_util.o
+    C++      common/lua/lua_unpersist.o
+    C++      common/lua/lundump.o
+    C++      common/lua/lvm.o
+    C++      common/lua/lzio.o
+    C++      common/lua/scummvm_file.o
+    AR       engines/ultima/libultima.a
+    RANLIB   engines/ultima/libultima.a
+    AR       engines/libengines.a
+    AR       gui/libgui.a
+    RANLIB   engines/libengines.a
+    AR       backends/libbackends.a
+    RANLIB   gui/libgui.a
+    RANLIB   backends/libbackends.a
+    AR       video/libvideo.a
+    AR       image/libimage.a
+    RANLIB   video/libvideo.a
+    RANLIB   image/libimage.a
+    AR       graphics/libgraphics.a
+    AR       audio/libaudio.a
+    RANLIB   graphics/libgraphics.a
+    RANLIB   audio/libaudio.a
+    AR       math/libmath.a
+    RANLIB   math/libmath.a
+    AR       common/libcommon.a
+    AR       common/compression/libcompression.a
+    RANLIB   common/libcommon.a
+    RANLIB   common/compression/libcompression.a
+    AR       common/formats/libformats.a
+    RANLIB   common/formats/libformats.a
+    AR       common/lua/liblua.a
+    RANLIB   common/lua/liblua.a
+    C++      base/version.o
+    AR       base/libbase.a
+    RANLIB   base/libbase.a
+    LINK     scummvm.elf
+/opt/devkitpro/devkitARM/arm-none-eabi/bin/ld: warning: /opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/16.1.0/armv6k/fpu/crtn.o: missing .note.GNU-stack section implies executable stack
+/opt/devkitpro/devkitARM/arm-none-eabi/bin/ld: NOTE: This behaviour is deprecated and will be removed in a future version of the linker
