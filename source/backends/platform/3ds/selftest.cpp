@@ -135,7 +135,7 @@ static long st_waitCol, st_waitMax, st_waitDone;
 // Screenshots: the screens are copied to memory at once (fast, on the game's
 // thread) and written to the SD card by a separate thread, so a slow SD card
 // never holds the game up (a shot froze Gold Box on the real 3DS).
-typedef struct { char path[160]; u8* px; int fmt, w, stride; } StShotJob;
+typedef struct { char path[300]; u8* px; int fmt, w, stride; } StShotJob;
 static StShotJob st_jobs[8];
 static volatile int st_jobHead, st_jobTail;
 static LightEvent st_jobEvent;
@@ -273,10 +273,25 @@ static void st_load(const char* script) {
     }
 }
 
+// Runs before the game's main() (libctru has set up argv by then): take
+// --selftest=<script> out of argv, so no port's own option parser ever sees it
+// (ScummVM and JA2 quit on unknown options).
+static const char* st_scriptArg;
+__attribute__((constructor)) static void st_hide_arg(void) {
+    int n = 0;
+    for (int i = 0; i < __system_argc; i++) {
+        char* a = __system_argv[i];
+        if (i > 0 && a && !strncmp(a, "--selftest=", 11)) { st_scriptArg = a + 11; continue; }
+        __system_argv[n++] = a;
+    }
+    if (n < __system_argc) __system_argv[n] = NULL;
+    __system_argc = n;
+}
+
 static void st_init(void) {
     st_on = 0;
-    const char* script = NULL;
-    for (int i = 0; i < __system_argc; i++)   // a port may have changed argv: skip empty entries
+    const char* script = st_scriptArg;
+    for (int i = 0; !script && i < __system_argc; i++)   // a port may have changed argv: skip empty entries
         if (__system_argv[i] && !strncmp(__system_argv[i], "--selftest=", 11)) script = __system_argv[i] + 11;
     if (!script) return;
     snprintf(st_dir, sizeof st_dir, "sdmc:/3ds/testagent/results");
