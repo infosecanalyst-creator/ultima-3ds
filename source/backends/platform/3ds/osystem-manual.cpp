@@ -138,6 +138,14 @@ void OSystem_3DS::runManual() {
 			mi.tx = tp.px;
 			mi.ty = tp.py;
 		}
+		mi.has_hold = true;                      // drag to scroll
+		if (hidKeysHeld() & KEY_TOUCH) {
+			touchPosition tp;
+			hidTouchRead(&tp);
+			mi.touch_held = true;
+			mi.hx = tp.px;
+			mi.hy = tp.py;
+		}
 		circlePosition cp;
 		hidCircleRead(&cp);
 		mi.cpad_y = cp.dy;
