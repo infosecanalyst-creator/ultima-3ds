@@ -488,7 +488,8 @@ void OSystem_3DS::runPortMenu() {
 		PadUI::drawHeader(bc, confirm ? "EXIT GAME" : "MENU");
 		if (confirm) {
 			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
-			PadUI::drawText(bc, 8, 62, "Unsaved progress is lost.", PadUI::kGrey, false);
+			PadUI::drawText(bc, 8, 62, g_engine && g_engine->canSaveAutosaveCurrently()
+				? "The game is saved to its autosave first." : "Unsaved progress is lost.", PadUI::kGrey, false);
 		}
 		for (int i = 0; i < nb; ++i) {
 			if (!usable(i, confirm)) {        // greyed out: dim face, grey label
@@ -542,6 +543,10 @@ void OSystem_3DS::runPortMenu() {
 		e.type = Common::EVENT_MAINMENU;          // ScummVM's game menu: save, load, options
 		pushPadEvent(e);
 	} else if (chosen == kExit) {
+		// Rule 17 (never lose progress): a game that can be saved now goes to its autosave
+		// slot first (Journey Onward / Load picks it up).
+		if (g_engine && g_engine->canSaveAutosaveCurrently())
+			g_engine->saveGameState(g_engine->getAutosaveSlot(), "Autosave", true);
 		Common::Event e;
 		e.type = Common::EVENT_QUIT;
 		pushPadEvent(e);
