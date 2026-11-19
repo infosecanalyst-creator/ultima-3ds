@@ -863,3 +863,27 @@ rw("backends/platform/3ds/sprite.cpp",
    "ultima-3ds: start with no texture")
 print("done")
 
+
+# ------------------------------------------------- house-style game picker
+# ScummVM's launcher on a 320x240 overlay only has its smallest built-in font
+# (about 6 px; freetype is off): too small to read on the 3DS. The picker
+# (osystem-pad.cpp) shows the games as big buttons first; its last button opens
+# ScummVM's launcher for adding games and settings. Hardware baseline Nov 19 2026.
+rw(OH,
+   "\tvoid runPortMenu();                // START: house-style port menu (osystem-pad.cpp)\n",
+   "\tvoid runPortMenu();                // START: house-style port menu (osystem-pad.cpp)\n"
+   "\tint runGamePicker();               // big-button game picker before the launcher (osystem-pad.cpp)\n",
+   "int runGamePicker();")
+rw("base/main.cpp",
+   "\t// If the backend does not allow quitting, loop on the launcher until a game is started\n",
+   "#ifdef __3DS__\n"
+   "\t{\t// ultima-3ds: the house-style game picker first (readable on the 3DS)\n"
+   "\t\textern int n3dsGamePicker();\n"
+   "\t\tconst int pick = n3dsGamePicker();\n"
+   "\t\tif (pick != 0)\n"
+   "\t\t\treturn pick > 0;\n"
+   "\t}\n"
+   "#endif\n"
+   "\t// If the backend does not allow quitting, loop on the launcher until a game is started\n",
+   "ultima-3ds: the house-style game picker first")
+print("done")

@@ -529,4 +529,156 @@ void OSystem_3DS::runPortMenu() {
 	}
 }
 
+// ---- the game picker (house style): big buttons instead of ScummVM's launcher ----
+// ScummVM's own launcher only has its smallest built-in font on a 320x240
+// overlay (freetype is off), about 6 px tall: too small to read (principle,
+// Nov 18 2026: text fonts and sizes have to be readable). base/main.cpp's
+// launcherDialog() calls this first. 1: a game was chosen (its domain is
+// active), 0: show ScummVM's launcher (adding games, settings), -1: quit.
+int OSystem_3DS::runGamePicker() {
+	struct Game { Common::String target, label; };
+	std::vector<Game> games;
+	for (const auto &d : ConfMan.getGameDomains()) {
+		Common::String desc = d._value.getValOrDefault("description");
+		if (desc.empty()) desc = d._key;
+		games.push_back({ d._key, desc });
+	}
+	if (games.empty())
+		return 0;                           // nothing added yet: the launcher's Add Game
+	for (size_t i = 0; i < games.size(); ++i)   // by name (the map has no order)
+		for (size_t j = i + 1; j < games.size(); ++j)
+			if (games[j].label < games[i].label) { Game t = games[i]; games[i] = games[j]; games[j] = t; }
+	if (games.size() > 5) games.resize(5);
+
+	static Sprite *top = nullptr, *bot = nullptr;
+	static uint8_t topPx[400 * 240 * 3], botPx[320 * 240 * 3];
+	if (!top) {
+		top = new Sprite;
+		bot = new Sprite;
+		top->create(400, 240, &kPadMode);
+		bot->create(320, 240, &kPadMode);
+		top->setPosition(0, 0);
+		bot->setPosition(0, 0);
+		top->setFilteringMode(false);
+		bot->setFilteringMode(false);
+	}
+
+	const int nGames = (int)games.size(), n = nGames + 1;   // + SCUMMVM LAUNCHER
+	std::vector<PadUI::Button> btns;
+	{
+		const int y0 = 28, gap = 4, h = (240 - 6 - y0 - gap * (n - 1)) / n;
+		for (int i = 0; i < n; ++i) {
+			std::string l = i < nGames ? games[i].label.c_str() : "SCUMMVM LAUNCHER";
+			if (PadUI::textWidth(l) > 296) l = l.substr(0, 296 / 6 - 3) + "...";
+			btns.push_back({ 6, y0 + i * (h + gap), 308, h, l, PadUI::Action(), false });
+		}
+	}
+	int focus = 0;
+	const Common::String last = ConfMan.get("lastselectedgame");
+	for (int i = 0; i < nGames; ++i)
+		if (games[i].target == last) focus = i;
+
+	if (R_SUCCEEDED(gspLcdInit())) {
+		GSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTH);
+		gspLcdExit();
+	}
+	int result = 2, pressed = -1;           // 2: still choosing
+	bool redraw = true;
+	while (result == 2) {
+		if (!aptMainLoop() || exiting) { result = -1; break; }
+		if (sleeping) { delayMillis(50); redraw = true; continue; }
+		manualOpen = true;                  // the input thread leaves the keys to us
+		hidScanInput();
+		const u32 down = hidKeysDown(), rep = hidKeysDownRepeat();
+		int hitIdx = -1;
+		if (rep & (KEY_DUP | KEY_DLEFT)) { focus = (focus + n - 1) % n; redraw = true; }
+		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { focus = (focus + 1) % n; redraw = true; }
+		if (down & KEY_A) hitIdx = focus;
+		if (down & KEY_TOUCH) {
+			touchPosition tp;
+			hidTouchRead(&tp);
+			for (int i = 0; i < n; ++i)
+				if (tp.px >= btns[i].x && tp.px < btns[i].x + btns[i].w && tp.py >= btns[i].y && tp.py < btns[i].y + btns[i].h)
+					hitIdx = i;
+		}
+		if (down & KEY_START) {             // the house START menu: manual, exit
+			for (int i = 0; i < 100 && aptMainLoop(); ++i) {
+				hidScanInput();
+				if (!(hidKeysHeld() & KEY_START)) break;
+				delayMillis(10);
+			}
+			manualOpen = false;
+			runPortMenu();
+			Common::Event ev;
+			while (getEventManager()->pollEvent(ev)) {}
+			if (getEventManager()->shouldQuit()) { result = -1; break; }
+			redraw = true;
+			continue;
+		}
+		if (hitIdx >= 0) {
+			click3ds::play();
+			pressed = focus = hitIdx;
+			redraw = true;
+			result = hitIdx < nGames ? 1 : 0;
+		}
+		if (!redraw) { gspWaitForVBlank(); continue; }
+		redraw = false;
+
+		PadUI::Canvas tc = { 400, 240, topPx };
+		tc.fill(0, 0, 400, 240, PadUI::kBg);
+		PadUI::drawHeader(tc, "ULTIMA IV AND VI");
+		PadUI::drawText(tc, 8, 40, "Choose a game.", PadUI::kWhite);
+		PadUI::drawText(tc, 8, 62, "Tap it on the touch screen, or use", PadUI::kGrey, false);
+		PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
+		PadUI::drawText(tc, 8, 110, "SCUMMVM LAUNCHER: add games, change", PadUI::kGrey, false);
+		PadUI::drawText(tc, 8, 128, "ScummVM's settings.", PadUI::kGrey, false);
+		PadUI::drawHintStrip(tc, "A start    START menu    ZL swap in a game");
+		PadUI::Canvas bc = { 320, 240, botPx };
+		bc.fill(0, 0, 320, 240, PadUI::kBg);
+		PadUI::drawHeader(bc, "CHOOSE A GAME");
+		for (int i = 0; i < n; ++i) {
+			PadUI::drawButton(bc, btns[i], i == pressed);
+			if (i == focus) {
+				bc.frame(btns[i].x - 1, btns[i].y - 1, btns[i].w + 2, btns[i].h + 2, PadUI::kGold);
+				bc.frame(btns[i].x - 2, btns[i].y - 2, btns[i].w + 4, btns[i].h + 4, PadUI::kGold);
+			}
+		}
+		pressed = -1;
+		canvasToSprite(tc, top);
+		canvasToSprite(bc, bot);
+		C3D_FrameBegin(0);
+			top->transfer();
+			bot->transfer();
+		C3D_FrameEnd(0);
+		C3D_FrameBegin(0);
+			C3D_RenderTargetClear(_renderTargetTop, C3D_CLEAR_ALL, 0x00000000, 0);
+			C3D_FrameDrawOn(_renderTargetTop);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionTop);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, top->getMatrix());
+			top->render();
+			C3D_RenderTargetClear(_renderTargetBottom, C3D_CLEAR_ALL, 0x00000000, 0);
+			C3D_FrameDrawOn(_renderTargetBottom);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _projectionLocation, &_projectionBottom);
+			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, bot->getMatrix());
+			bot->render();
+		C3D_FrameEnd(0);
+	}
+	for (int i = 0; i < 100 && aptMainLoop(); ++i) {   // let go of the stylus / A first
+		hidScanInput();
+		if (!(hidKeysHeld() & (KEY_TOUCH | KEY_A | KEY_START)))
+			break;
+		delayMillis(10);
+	}
+	manualOpen = false;
+	updateBacklight();
+	if (result == 1)
+		ConfMan.setActiveDomain(games[focus].target);
+	return result;
+}
+
 } // namespace N3DS
+
+int n3dsGamePicker() {     // base/main.cpp (ultima-3ds)
+	return static_cast<N3DS::OSystem_3DS *>(g_system)->runGamePicker();
+}
+
