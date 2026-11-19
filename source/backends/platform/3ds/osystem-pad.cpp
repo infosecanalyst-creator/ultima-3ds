@@ -498,7 +498,8 @@ void OSystem_3DS::runPortMenu() {
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
 		PadUI::drawHeader(tc, "ULTIMA IV AND VI", "PAUSED");
 		PadUI::drawText(tc, 8, 40, confirm ? "Exit the game?" : "The game is paused.", PadUI::kWhite);
-		PadUI::drawText(tc, 8, 62, confirm ? "Anything you have not saved is lost." : "Choose on the touch screen, or with", PadUI::kGrey, false);
+		PadUI::drawText(tc, 8, 62, confirm ? (exitAutosaveOk() ? "It is saved to its autosave slot first." : "Anything you have not saved is lost.")
+		                                   : "Choose on the touch screen, or with", PadUI::kGrey, false);
 		if (!confirm) PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
 		PadUI::drawHintStrip(tc, confirm ? "A choose    B no" : "A choose    B / START resume");
 		PadUI::Canvas bc = { 320, 240, botPx };
