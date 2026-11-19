@@ -584,6 +584,7 @@ int OSystem_3DS::runGamePicker() {
 	}
 	int result = 2, pressed = -1;           // 2: still choosing
 	bool redraw = true;
+	int frames = 0;                         // draw twice: both screen buffers show the picker
 	while (result == 2) {
 		if (!aptMainLoop() || exiting) { result = -1; break; }
 		if (sleeping) { delayMillis(50); redraw = true; continue; }
@@ -621,8 +622,9 @@ int OSystem_3DS::runGamePicker() {
 			redraw = true;
 			result = hitIdx < nGames ? 1 : 0;
 		}
-		if (!redraw) { gspWaitForVBlank(); continue; }
-		redraw = false;
+		if (redraw) { frames = 2; redraw = false; }
+		if (frames == 0) { gspWaitForVBlank(); continue; }
+		--frames;
 
 		PadUI::Canvas tc = { 400, 240, topPx };
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
@@ -643,7 +645,7 @@ int OSystem_3DS::runGamePicker() {
 				bc.frame(btns[i].x - 2, btns[i].y - 2, btns[i].w + 4, btns[i].h + 4, PadUI::kGold);
 			}
 		}
-		pressed = -1;
+		if (frames == 0) pressed = -1;
 		canvasToSprite(tc, top);
 		canvasToSprite(bc, bot);
 		C3D_FrameBegin(0);
