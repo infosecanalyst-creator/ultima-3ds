@@ -38,6 +38,7 @@ static uint8_t s_bottomPx[320 * 240 * 3], s_topPx[400 * 240 * 3];
 static bool s_bottomDirty = true, s_topDirty = true;
 static uint32 s_drawnMapSerial = ~0u, s_drawnSerial = ~0u;
 static bool s_swapped = false;          // ZL / SWAP: game on the touch screen
+static bool s_swapLoaded = false;       // rule 16: the swap is remembered (3ds_swapped in scummvm.ini)
 static uint32 s_lastFrame = 0, s_lastFrameTime = 0;
 static uint32 s_autoTypeSerial = ~0u;
 
@@ -62,6 +63,11 @@ static int wantedMode(OSystem_3DS *osys, bool overlayVisible) {
 		return 0;
 	if (Pad3DS::info.game == Pad3DS::kNoGame)
 		return 0;
+	if (!s_swapLoaded) {
+		const Common::String &app = Common::ConfigManager::kApplicationDomain;
+		s_swapped = ConfMan.hasKey("3ds_swapped", app) && ConfMan.getBool("3ds_swapped", app);
+		s_swapLoaded = true;
+	}
 	return s_swapped ? 2 : 1;
 }
 
@@ -70,6 +76,7 @@ void OSystem_3DS::padUpdateLayout() {
 		memset(&Pad3DS::info, 0, sizeof(Pad3DS::info));
 		s_pad = PadUI::State();
 		s_swapped = false;
+		s_swapLoaded = false;   // read again for the next game
 	}
 	const int mode = wantedMode(this, _overlayVisible);
 	const Screen want = mode == 1 ? kScreenTop : mode == 2 ? kScreenBottom : (Screen)ConfMan.getInt("3ds_screen");
@@ -185,6 +192,8 @@ void OSystem_3DS::padToggleSwap() {
 	if (!g_engine || Pad3DS::info.game == Pad3DS::kNoGame)
 		return;
 	s_swapped = !s_swapped;
+	ConfMan.setBool("3ds_swapped", s_swapped, Common::ConfigManager::kApplicationDomain);
+	ConfMan.flushToDisk();
 	click3ds::play();
 }
 
