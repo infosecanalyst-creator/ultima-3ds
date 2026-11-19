@@ -23,6 +23,7 @@
 #include "common/config-manager.h"
 #include "common/mutex.h"
 #include "engines/engine.h"
+#include "engines/metaengine.h"
 
 namespace N3DS {
 
@@ -381,6 +382,23 @@ void OSystem_3DS::padPump() {
 // RESUME, MANUAL, SAVE / LOAD (ScummVM's game menu: save, load, options; in a
 // game only) and EXIT GAME (asks first). Runs its own loop on the main thread
 // like the manual; the input thread pauses meanwhile (manualOpen).
+// Rule 17: can EXIT GAME save to the engine's autosave slot right now? Not when the
+// engine can't save at this moment, nor when that slot holds one of the player's own
+// saves (the same check as Engine::saveAutosaveIfEnabled).
+static bool exitAutosaveOk() {
+	if (!g_engine || !g_engine->canSaveAutosaveCurrently())
+		return false;
+	const int slot = g_engine->getAutosaveSlot();
+	if (slot < 0)
+		return false;
+	if (const MetaEngine *me = g_engine->getMetaEngine()) {
+		SaveStateDescriptor desc = me->querySaveMetaInfos(ConfMan.getActiveDomainName().c_str(), slot);
+		if (desc.isValid() && !desc.isAutosave())
+			return false;
+	}
+	return true;
+}
+
 void OSystem_3DS::runPortMenu() {
 	static Sprite *top = nullptr, *bot = nullptr;
 	static uint8_t topPx[400 * 240 * 3], botPx[320 * 240 * 3];
@@ -488,7 +506,7 @@ void OSystem_3DS::runPortMenu() {
 		PadUI::drawHeader(bc, confirm ? "EXIT GAME" : "MENU");
 		if (confirm) {
 			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
-			PadUI::drawText(bc, 8, 62, g_engine && g_engine->canSaveAutosaveCurrently()
+			PadUI::drawText(bc, 8, 62, exitAutosaveOk()
 				? "The game is saved to its autosave first." : "Unsaved progress is lost.", PadUI::kGrey, false);
 		}
 		for (int i = 0; i < nb; ++i) {
@@ -545,7 +563,7 @@ void OSystem_3DS::runPortMenu() {
 	} else if (chosen == kExit) {
 		// Rule 17 (never lose progress): a game that can be saved now goes to its autosave
 		// slot first (Journey Onward / Load picks it up).
-		if (g_engine && g_engine->canSaveAutosaveCurrently())
+		if (exitAutosaveOk())
 			g_engine->saveGameState(g_engine->getAutosaveSlot(), "Autosave", true);
 		Common::Event e;
 		e.type = Common::EVENT_QUIT;
