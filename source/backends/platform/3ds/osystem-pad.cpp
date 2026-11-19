@@ -391,7 +391,9 @@ void OSystem_3DS::runPortMenu() {
 	std::vector<Item> items;
 	items.push_back({ "RESUME", kResume });
 	items.push_back({ "MANUAL", kManual });
-	if (inGame) items.push_back({ "SAVE / LOAD / OPTIONS", kSave });
+	items.push_back({ inGame ? "SAVE / LOAD / OPTIONS" : "SAVE / LOAD: START A GAME FIRST", kSave });
+	// house rule: a button that can't be used stays, greyed out and inert
+	auto usable = [&](int i, bool conf) { return conf || items[i].act != kSave || inGame; };
 	items.push_back({ "EXIT GAME", kExit });
 
 	manualOpen = true;
@@ -424,8 +426,8 @@ void OSystem_3DS::runPortMenu() {
 		const int n = (int)btns.size();
 		if (focus >= n) focus = n - 1;
 		int hitIdx = -1;
-		if (rep & (KEY_DUP | KEY_DLEFT)) { focus = (focus + n - 1) % n; redraw = true; }
-		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { focus = (focus + 1) % n; redraw = true; }
+		if (rep & (KEY_DUP | KEY_DLEFT)) { do focus = (focus + n - 1) % n; while (!usable(focus, confirm)); redraw = true; }
+		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { do focus = (focus + 1) % n; while (!usable(focus, confirm)); redraw = true; }
 		if (down & KEY_A) hitIdx = focus;
 		if (down & KEY_TOUCH) {
 			touchPosition tp;
@@ -434,6 +436,7 @@ void OSystem_3DS::runPortMenu() {
 				if (tp.px >= btns[i].x && tp.px < btns[i].x + btns[i].w && tp.py >= btns[i].y && tp.py < btns[i].y + btns[i].h)
 					hitIdx = i;
 		}
+		if (hitIdx >= 0 && !usable(hitIdx, confirm)) hitIdx = -1;   // greyed: no click, no action
 		if (down & (KEY_B | KEY_START)) {
 			if (confirm) { confirm = false; focus = (int)items.size() - 1; redraw = true; }
 			else chosen = kResume;
@@ -479,6 +482,13 @@ void OSystem_3DS::runPortMenu() {
 			PadUI::drawText(bc, 8, 62, "Unsaved progress is lost.", PadUI::kGrey, false);
 		}
 		for (int i = 0; i < nb; ++i) {
+			if (!usable(i, confirm)) {        // greyed out: dim face, grey label
+				const PadUI::Button &bt = btns[i];
+				bc.fill(bt.x, bt.y, bt.w, bt.h, PadUI::kShade);
+				bc.frame(bt.x, bt.y, bt.w, bt.h, PadUI::kFace);
+				PadUI::drawText(bc, bt.x + (bt.w - PadUI::textWidth(bt.label)) / 2, bt.y + (bt.h - 13) / 2, bt.label, PadUI::kGrey, false);
+				continue;
+			}
 			PadUI::drawButton(bc, btns[i], i == pressed);
 			if (i == focus) {                 // 2 px gold focus ring
 				bc.frame(btns[i].x - 1, btns[i].y - 1, btns[i].w + 2, btns[i].h + 2, PadUI::kGold);
