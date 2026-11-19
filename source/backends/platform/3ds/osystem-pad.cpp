@@ -679,6 +679,6 @@ int OSystem_3DS::runGamePicker() {
 } // namespace N3DS
 
 int n3dsGamePicker() {     // base/main.cpp (ultima-3ds)
-	return static_cast<N3DS::OSystem_3DS *>(g_system)->runGamePicker();
+	return dynamic_cast<N3DS::OSystem_3DS *>(g_system)->runGamePicker();
 }
 
