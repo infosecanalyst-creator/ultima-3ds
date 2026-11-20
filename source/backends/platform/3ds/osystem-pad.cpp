@@ -600,6 +600,27 @@ void OSystem_3DS::runPortMenu() {
 	}
 }
 
+// SV-06: Close from the HOME menu (or power off). pollEvent calls this once, on the
+// main thread, when aptMainLoop() first returns false: the same guarded autosave EXIT
+// GAME does (exitAutosaveOk), then the normal quit. Nobody can be asked if it fails,
+// so a failed save is only logged; a good one points Journey Onward at it (SV-01).
+void n3dsHomeCloseSave() {
+	if (!exitAutosaveOk()) {
+		printf("[3ds] HOME close: no exit save possible now\n");
+		return;
+	}
+	const int slot = g_engine->getAutosaveSlot();
+	const Common::Error r = g_engine->saveGameState(slot, "Autosave", true);
+	if (r.getCode() != Common::kNoError) {
+		printf("[3ds] HOME close: exit save to slot %d FAILED\n", slot);
+		return;
+	}
+	ConfMan.setInt("last_save", slot);
+	ConfMan.setInt("latest_save", slot);
+	ConfMan.flushToDisk();
+	printf("[3ds] HOME close: exit save to slot %d written\n", slot);
+}
+
 // ---- the game picker (house style): big buttons instead of ScummVM's launcher ----
 // ScummVM's own launcher only has its smallest built-in font on a 320x240
 // overlay (freetype is off), about 6 px tall: too small to read (principle,

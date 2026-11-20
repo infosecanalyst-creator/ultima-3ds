@@ -887,3 +887,44 @@ rw("base/main.cpp",
    "\t// If the backend does not allow quitting, loop on the launcher until a game is started\n",
    "ultima-3ds: the house-style game picker first")
 print("done")
+
+
+# ------------------------------------------------- HOME close and quitting (SV-06)
+# Close from the HOME menu used to quit at once (EVENT_QUIT) without the exit save.
+# Run EXIT GAME's guarded autosave first, once, on the main thread
+# (n3dsHomeCloseSave in osystem-pad.cpp), then quit the normal way. HOME pressed /
+# lid closed already pause the engine (upstream's pause token) and the input thread.
+rw(EV,
+   "\t\tif (_sleepPauseToken.isActive()) {\n\t\t\t_sleepPauseToken.clear();\n\t\t}\n\n\t\tevent.type = Common::EVENT_QUIT;\n",
+   "\t\tif (_sleepPauseToken.isActive()) {\n\t\t\t_sleepPauseToken.clear();\n\t\t}\n"
+   "\t\t// ultima-3ds SV-06: save like EXIT GAME first (osystem-pad.cpp), once\n"
+   "\t\tstatic bool homeCloseSaved = false;\n"
+   "\t\tif (!homeCloseSaved) {\n\t\t\thomeCloseSaved = true;\n"
+   "\t\t\tvoid n3dsHomeCloseSave();\n\t\t\tn3dsHomeCloseSave();\n\t\t}\n\n"
+   "\t\tevent.type = Common::EVENT_QUIT;\n",
+   "ultima-3ds SV-06: save like EXIT GAME first")
+
+# ------------------------------------------------- heap (SV-04)
+# The override committed every free byte, so the next program the Homebrew loader
+# starts after ScummVM quits failed to load. Shared heap3ds pattern: wait up to 3 s
+# for the previous app's memory to be released, and keep 4 MB uncommitted. The
+# linear sizes (10 / 20 MB) and the clamp / back-off above are unchanged.
+rw(AH,
+   "\tsvcGetResourceLimitLimitValues(&maxCommit, reslimit, &reslimitType, 1); // for APPLICATION this is equal to APPMEMALLOC at all times\n"
+   "\tsvcGetResourceLimitCurrentValues(&currentCommit, reslimit, &reslimitType, 1);\n"
+   "\tsvcCloseHandle(reslimit);\n\n"
+   "\t// Calculate how much remaining free memory is available\n"
+   "\tu32 remaining = (u32)(maxCommit - currentCommit) &~ 0xFFF;\n",
+   "\tfor (int tries = 0; tries < 300; tries++) { // ultima-3ds SV-04: wait for the last app's memory\n"
+   "\t\tsvcGetResourceLimitLimitValues(&maxCommit, reslimit, &reslimitType, 1);\n"
+   "\t\tsvcGetResourceLimitCurrentValues(&currentCommit, reslimit, &reslimitType, 1);\n"
+   "\t\tif (maxCommit - currentCommit >= (64ll << 20)) break;\n"
+   "\t\tsvcSleepThread(10000000LL);\n"
+   "\t}\n"
+   "\tsvcCloseHandle(reslimit);\n\n"
+   "\t// Calculate how much remaining free memory is available, keeping 4 MB\n"
+   "\t// uncommitted so the next program can launch after this one quits\n"
+   "\tu32 remaining = (u32)(maxCommit - currentCommit) &~ 0xFFF;\n"
+   "\tif (remaining > (16u << 20)) remaining -= (4u << 20);\n",
+   "ultima-3ds SV-04: wait for the last app's memory")
+print("done")
