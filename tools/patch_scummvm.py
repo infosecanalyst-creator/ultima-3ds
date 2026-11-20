@@ -828,6 +828,7 @@ print("done")
 # selftest.cpp (from 3ds-test-suite/hwtest): inert unless the test agent starts
 # ScummVM with --selftest=<script>. The --wrap flags are added in build-3ds.sh.
 copy("backends/platform/3ds/selftest.cpp")
+copy("backends/platform/3ds/restartguard.c")
 rw("backends/platform/3ds/module.mk",
    "\tosystem-pad.o\n",
    "\tosystem-pad.o \\\n\tselftest.o\n",
