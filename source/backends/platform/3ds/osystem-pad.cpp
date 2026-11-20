@@ -399,6 +399,9 @@ static bool exitAutosaveOk() {
 	return true;
 }
 
+// SV-02: set when EXIT GAME's save failed; the menu then reopens on "Not saved!".
+static bool s_exitSaveFailed = false;
+
 void OSystem_3DS::runPortMenu() {
 	static Sprite *top = nullptr, *bot = nullptr;
 	static uint8_t topPx[400 * 240 * 3], botPx[320 * 240 * 3];
@@ -413,7 +416,9 @@ void OSystem_3DS::runPortMenu() {
 		bot->setFilteringMode(false);
 	}
 	const bool inGame = g_engine != nullptr;
-	enum { kResume, kManual, kSave, kExit };
+	enum { kResume, kManual, kSave, kExit, kExitNoSave };
+	const bool failPage = s_exitSaveFailed;       // SV-02: reopened after a failed exit save
+	s_exitSaveFailed = false;
 	struct Item { const char *label; int act; };
 	std::vector<Item> items;
 	items.push_back({ "RESUME", kResume });
@@ -430,8 +435,8 @@ void OSystem_3DS::runPortMenu() {
 	}
 	delayMillis(30);                        // let the input thread finish its scan
 
-	int focus = 0, pressed = -1, chosen = -1;
-	bool confirm = false, redraw = true;
+	int focus = failPage ? 1 : 0, pressed = -1, chosen = -1;
+	bool confirm = failPage, redraw = true;
 	std::vector<PadUI::Button> btns;
 	// full-width buttons filling the touch screen below the header (rule 11)
 	auto layout = [&]() {
@@ -441,7 +446,7 @@ void OSystem_3DS::runPortMenu() {
 			for (int i = 0; i < n; ++i)
 				btns.push_back({ 6, y0 + i * (h + gap), 308, h, items[i].label, PadUI::Action(), false });
 		} else {
-			btns.push_back({ 6, 120, 150, 112, "YES, EXIT", PadUI::Action(), false });
+			btns.push_back({ 6, 120, 150, 112, failPage ? "EXIT ANYWAY" : "YES, EXIT", PadUI::Action(), false });
 			btns.push_back({ 164, 120, 150, 112, "NO", PadUI::Action(), false });
 		}
 	};
@@ -465,7 +470,7 @@ void OSystem_3DS::runPortMenu() {
 		}
 		if (hitIdx >= 0 && !usable(hitIdx, confirm)) hitIdx = -1;   // greyed: no click, no action
 		if (down & (KEY_B | KEY_START)) {
-			if (confirm) { confirm = false; focus = (int)items.size() - 1; redraw = true; }
+			if (confirm && !failPage) { confirm = false; focus = (int)items.size() - 1; redraw = true; }
 			else chosen = kResume;
 		}
 		if (hitIdx >= 0) {
@@ -476,7 +481,9 @@ void OSystem_3DS::runPortMenu() {
 				if (items[hitIdx].act == kExit) { confirm = true; focus = 1; }
 				else chosen = items[hitIdx].act;
 			} else if (hitIdx == 0) {
-				chosen = kExit;
+				chosen = failPage ? kExitNoSave : kExit;
+			} else if (failPage) {
+				chosen = kResume;                 // NO after a failed save: back to the game
 			} else {
 				confirm = false;
 				focus = (int)items.size() - 1;
@@ -487,7 +494,7 @@ void OSystem_3DS::runPortMenu() {
 		redraw = false;
 		{
 			const size_t before = btns.size();
-			const bool wasConfirm = btns.size() == 2 && btns[0].label == "YES, EXIT";
+			const bool wasConfirm = btns.size() == 2 && (btns[0].label == "YES, EXIT" || btns[0].label == "EXIT ANYWAY");
 			layout();                         // the press may have switched pages: draw the new one
 			if (wasConfirm != confirm || before != btns.size()) pressed = -1;
 		}
@@ -497,15 +504,18 @@ void OSystem_3DS::runPortMenu() {
 		PadUI::Canvas tc = { 400, 240, topPx };
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
 		PadUI::drawHeader(tc, "ULTIMA IV AND VI", "PAUSED");
-		PadUI::drawText(tc, 8, 40, confirm ? "Exit the game?" : "The game is paused.", PadUI::kWhite);
-		PadUI::drawText(tc, 8, 62, confirm ? (exitAutosaveOk() ? "It is saved to its autosave slot first." : "Anything you have not saved is lost.")
+		PadUI::drawText(tc, 8, 40, failPage ? "Not saved!" : confirm ? "Exit the game?" : "The game is paused.", PadUI::kWhite);
+		PadUI::drawText(tc, 8, 62, failPage ? "The save failed (SD card full?). Exit anyway?" : confirm ? (exitAutosaveOk() ? "It is saved to its autosave slot first." : "Anything you have not saved is lost.")
 		                                   : "Choose on the touch screen, or with", PadUI::kGrey, false);
 		if (!confirm) PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
 		PadUI::drawHintStrip(tc, confirm ? "A choose    B no" : "A choose    B / START resume");
 		PadUI::Canvas bc = { 320, 240, botPx };
 		bc.fill(0, 0, 320, 240, PadUI::kBg);
-		PadUI::drawHeader(bc, confirm ? "EXIT GAME" : "MENU");
-		if (confirm) {
+		PadUI::drawHeader(bc, failPage ? "SAVE FAILED" : confirm ? "EXIT GAME" : "MENU");
+		if (failPage) {
+			PadUI::drawText(bc, 8, 40, "Not saved! Exit anyway?", PadUI::kWhite);
+			PadUI::drawText(bc, 8, 62, "Progress since the last save is lost.", PadUI::kGrey, false);
+		} else if (confirm) {
 			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
 			PadUI::drawText(bc, 8, 62, exitAutosaveOk()
 				? "The game is saved to its autosave first." : "Unsaved progress is lost.", PadUI::kGrey, false);
@@ -564,8 +574,26 @@ void OSystem_3DS::runPortMenu() {
 	} else if (chosen == kExit) {
 		// Rule 17 (never lose progress): a game that can be saved now goes to its autosave
 		// slot first (Journey Onward / Load picks it up).
-		if (exitAutosaveOk())
-			g_engine->saveGameState(g_engine->getAutosaveSlot(), "Autosave", true);
+		if (exitAutosaveOk()) {
+			const int slot = g_engine->getAutosaveSlot();
+			const Common::Error r = g_engine->saveGameState(slot, "Autosave", true);
+			if (r.getCode() != Common::kNoError) {
+				// SV-02: never quit after a failed save without asking
+				s_exitSaveFailed = true;
+				runPortMenu();
+				return;
+			}
+			// SV-01: Journey Onward loads the engine's "last save", which autosaves
+			// never update; point it at the exit save (Ultima IV: last_save,
+			// Ultima VI: latest_save).
+			ConfMan.setInt("last_save", slot);
+			ConfMan.setInt("latest_save", slot);
+			ConfMan.flushToDisk();
+		}
+		Common::Event e;
+		e.type = Common::EVENT_QUIT;
+		pushPadEvent(e);
+	} else if (chosen == kExitNoSave) {
 		Common::Event e;
 		e.type = Common::EVENT_QUIT;
 		pushPadEvent(e);
