@@ -464,8 +464,6 @@ void OSystem_3DS::runPortMenu() {
 		int hitIdx = -1;
 		if (rep & (KEY_DUP | KEY_DLEFT)) { do focus = (focus + n - 1) % n; while (!usable(focus, confirm)); redraw = true; }
 		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { do focus = (focus + 1) % n; while (!usable(focus, confirm)); redraw = true; }
-		if (pages > 1 && (down & KEY_L)) { turnPage(-1); redraw = true; }
-		if (pages > 1 && (down & KEY_R)) { turnPage(1); redraw = true; }
 		if (down & KEY_A) hitIdx = focus;
 		if (down & KEY_TOUCH) {
 			touchPosition tp;
@@ -707,6 +705,8 @@ int OSystem_3DS::runGamePicker() {
 		int hitIdx = -1;
 		if (rep & (KEY_DUP | KEY_DLEFT)) { focus = (focus + n - 1) % n; redraw = true; }
 		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { focus = (focus + 1) % n; redraw = true; }
+		if (pages > 1 && (down & KEY_L)) { turnPage(-1); redraw = true; }
+		if (pages > 1 && (down & KEY_R)) { turnPage(1); redraw = true; }
 		if (down & KEY_A) hitIdx = focus;
 		if (down & KEY_TOUCH) {
 			touchPosition tp;
