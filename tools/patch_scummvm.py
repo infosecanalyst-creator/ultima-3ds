@@ -657,6 +657,7 @@ rw(EV,
    "\tswitch ((_3DSCustomEvent)event.customType) {\n\tcase k3DSEventToggleDragMode:\n",
    "\tswitch ((_3DSCustomEvent)event.customType) {\n"
    "\tcase k3DSEventSwap:\n\t\tpadToggleSwap(); // ultima-3ds pad\n\t\treturn true;\n\n"
+   "\tcase k3DSEventManual:\n\t\treturn true; // runPortMenu() runs when the button is released\n\n"
    "\tcase k3DSEventToggleDragMode:\n",
    "\tcase k3DSEventSwap:\n")
 rw("backends/platform/3ds/main.cpp",

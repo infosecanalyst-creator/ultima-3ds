@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <algorithm>
 #include <vector>
 #include "backends/platform/3ds/osystem.h"
 #include "backends/platform/3ds/pad_ui.h"
@@ -463,6 +464,8 @@ void OSystem_3DS::runPortMenu() {
 		int hitIdx = -1;
 		if (rep & (KEY_DUP | KEY_DLEFT)) { do focus = (focus + n - 1) % n; while (!usable(focus, confirm)); redraw = true; }
 		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { do focus = (focus + 1) % n; while (!usable(focus, confirm)); redraw = true; }
+		if (pages > 1 && (down & KEY_L)) { turnPage(-1); redraw = true; }
+		if (pages > 1 && (down & KEY_R)) { turnPage(1); redraw = true; }
 		if (down & KEY_A) hitIdx = focus;
 		if (down & KEY_TOUCH) {
 			touchPosition tp;
@@ -644,7 +647,6 @@ int OSystem_3DS::runGamePicker() {
 	for (size_t i = 0; i < games.size(); ++i)   // by name (the map has no order)
 		for (size_t j = i + 1; j < games.size(); ++j)
 			if (games[j].label < games[i].label) { Game t = games[i]; games[i] = games[j]; games[j] = t; }
-	if (games.size() > 5) games.resize(5);
 
 	static Sprite *top = nullptr, *bot = nullptr;
 	static uint8_t topPx[400 * 240 * 3], botPx[320 * 240 * 3];
@@ -659,20 +661,35 @@ int OSystem_3DS::runGamePicker() {
 		bot->setFilteringMode(false);
 	}
 
-	const int nGames = (int)games.size(), n = nGames + 1;   // + SCUMMVM LAUNCHER
+	// SV-07: every game shows. Up to 5 fit on one page; with more, 4 games per page plus a
+	// NEXT PAGE button (L / R also turn the page), then SCUMMVM LAUNCHER last.
+	const int total = (int)games.size();
+	const int perPage = total <= 5 ? 5 : 4;
+	const int pages = (total + perPage - 1) / perPage;
+	int page = 0, first = 0, nGames = 0, n = 0;
 	std::vector<PadUI::Button> btns;
-	{
-		const int y0 = 28, gap = 4, h = (240 - 6 - y0 - gap * (n - 1)) / n;
-		for (int i = 0; i < n; ++i) {
-			std::string l = i < nGames ? games[i].label.c_str() : "SCUMMVM LAUNCHER";
+	auto build = [&]() {
+		first = page * perPage;
+		nGames = std::min(perPage, total - first);
+		const int rows = nGames + (pages > 1 ? 1 : 0) + 1;
+		n = rows;
+		btns.clear();
+		const int y0 = 28, gap = 4, h = (240 - 6 - y0 - gap * (rows - 1)) / rows;
+		for (int i = 0; i < rows; ++i) {
+			std::string l;
+			if (i < nGames) l = games[first + i].label.c_str();
+			else if (i == nGames && pages > 1) { char b[32]; snprintf(b, sizeof b, "NEXT PAGE  %d/%d", page + 1, pages); l = b; }
+			else l = "SCUMMVM LAUNCHER";
 			if (PadUI::textWidth(l) > 296) l = l.substr(0, 296 / 6 - 3) + "...";
 			btns.push_back({ 6, y0 + i * (h + gap), 308, h, l, PadUI::Action(), false });
 		}
-	}
+	};
+	build();
 	int focus = 0;
 	const Common::String last = ConfMan.get("lastselectedgame");
-	for (int i = 0; i < nGames; ++i)
-		if (games[i].target == last) focus = i;
+	for (int i = 0; i < total; ++i)
+		if (games[i].target == last) { page = i / perPage; build(); focus = i - first; }
+	auto turnPage = [&](int d) { page = (page + d + pages) % pages; build(); focus = 0; };
 
 	if (R_SUCCEEDED(gspLcdInit())) {
 		GSPLCD_PowerOnBacklight(GSPLCD_SCREEN_BOTH);
@@ -716,7 +733,9 @@ int OSystem_3DS::runGamePicker() {
 			click3ds::play();
 			pressed = focus = hitIdx;
 			redraw = true;
-			result = hitIdx < nGames ? 1 : 0;
+			if (hitIdx < nGames) result = 1;
+			else if (pages > 1 && hitIdx == nGames) { turnPage(1); pressed = -1; focus = nGames; }   // NEXT PAGE: stay here
+			else result = 0;
 		}
 		if (redraw) { frames = 2; redraw = false; }
 		if (frames == 0) { gspWaitForVBlank(); continue; }
@@ -727,7 +746,7 @@ int OSystem_3DS::runGamePicker() {
 		PadUI::drawHeader(tc, "ULTIMA IV AND VI");
 		PadUI::drawText(tc, 8, 40, "Choose a game.", PadUI::kWhite);
 		PadUI::drawText(tc, 8, 62, "Tap it on the touch screen, or use", PadUI::kGrey, false);
-		PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
+		PadUI::drawText(tc, 8, 80, pages > 1 ? "the D-pad and A. L/R turn the page." : "the D-pad and A.", PadUI::kGrey, false);
 		PadUI::drawText(tc, 8, 110, "SCUMMVM LAUNCHER: add games, change", PadUI::kGrey, false);
 		PadUI::drawText(tc, 8, 128, "ScummVM's settings.", PadUI::kGrey, false);
 		PadUI::drawHintStrip(tc, "A start    START menu    ZL swap in a game");
@@ -770,7 +789,7 @@ int OSystem_3DS::runGamePicker() {
 	manualOpen = false;
 	updateBacklight();
 	if (result == 1)
-		ConfMan.setActiveDomain(games[focus].target);
+		ConfMan.setActiveDomain(games[first + focus].target);
 	return result;
 }
 
