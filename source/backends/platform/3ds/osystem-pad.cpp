@@ -24,6 +24,9 @@
 #include "common/mutex.h"
 #include "engines/engine.h"
 #include "engines/metaengine.h"
+#ifndef PORT_VERSION
+#define PORT_VERSION "unknown"
+#endif
 
 namespace N3DS {
 
@@ -508,6 +511,7 @@ void OSystem_3DS::runPortMenu() {
 		PadUI::drawText(tc, 8, 62, failPage ? "The save failed (SD card full?). Exit anyway?" : confirm ? (exitAutosaveOk() ? "It is saved to its autosave slot first." : "Anything you have not saved is lost.")
 		                                   : "Choose on the touch screen, or with", PadUI::kGrey, false);
 		if (!confirm) PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
+		if (!confirm && !failPage) PadUI::drawText(tc, 8, 200, "Build " PORT_VERSION, PadUI::kGrey, false);   // git describe of ultima-3ds
 		PadUI::drawHintStrip(tc, confirm ? "A choose    B no" : "A choose    B / START resume");
 		PadUI::Canvas bc = { 320, 240, botPx };
 		bc.fill(0, 0, 320, 240, PadUI::kBg);

@@ -11,6 +11,8 @@
 # never a moving master. Bump it deliberately (and re-test) to take newer ScummVM.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# Port version (this repo, not ScummVM) for the START menu, taken before anything is built.
+PORT_VERSION="$(git -c safe.directory='*' -C "$HERE" describe --always --dirty 2>/dev/null || echo unknown)"
 SRC="${SCUMMVM_DIR:-$HERE/scummvm}"
 PIN="$(tr -d '[:space:]' < "$HERE/patches/scummvm-commit.txt")"
 REF="${SCUMMVM_REF:-}"
@@ -59,6 +61,10 @@ fi
 # with --selftest (see backends/platform/3ds/selftest.cpp).
 grep -q "selftest wraps" config.mk || echo 'LDFLAGS += -Wl,--wrap=hidScanInput,--wrap=hidKeysHeld,--wrap=hidKeysDown,--wrap=hidKeysDownRepeat,--wrap=hidKeysUp,--wrap=hidTouchRead,--wrap=hidCircleRead,--wrap=irrstCstickRead,--wrap=aptMainLoop # selftest wraps' >> config.mk
 
+# Port version for the START menu (osystem-pad.cpp); replaced on every build.
+sed -i '/# port version$/d' config.mk
+echo "CXXFLAGS += -DPORT_VERSION='\"$PORT_VERSION\"' # port version" >> config.mk
+rm -f backends/platform/3ds/osystem-pad.o
 echo "==> make -j$JOBS"
 make -j"$JOBS" 2>&1 | tee "$HERE/build-3ds.log"
 make scummvm.3dsx
