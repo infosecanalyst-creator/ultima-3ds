@@ -5,11 +5,15 @@
 #
 #   ./build-3ds.sh          # clone (first run), patch, build
 #   ./build-3ds.sh clean
-#   SCUMMVM_REF=v2.9.0 ./build-3ds.sh   # pin a release instead of master
+#   SCUMMVM_REF=v2.9.0 ./build-3ds.sh   # build another tag/branch instead of the pin
+#
+# SV-03: by default the pinned upstream commit in patches/scummvm-commit.txt is built,
+# never a moving master. Bump it deliberately (and re-test) to take newer ScummVM.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SRC="${SCUMMVM_DIR:-$HERE/scummvm}"
-REF="${SCUMMVM_REF:-master}"
+PIN="$(tr -d '[:space:]' < "$HERE/patches/scummvm-commit.txt")"
+REF="${SCUMMVM_REF:-}"
 JOBS="${JOBS:-$(nproc 2>/dev/null || echo 4)}"
 
 : "${DEVKITPRO:?DEVKITPRO is not set}"
@@ -20,9 +24,18 @@ export PATH="$DEVKITARM/bin:$DEVKITPRO/tools/bin:$PORTLIBS/bin:$PATH"
 export PKG_CONFIG_LIBDIR="$PORTLIBS/lib/pkgconfig"
 
 if [ ! -d "$SRC/.git" ]; then
-    echo "==> cloning scummvm ($REF) into $SRC"
-    git clone --branch "$REF" --depth 1 https://github.com/scummvm/scummvm.git "$SRC"
+    if [ -n "$REF" ]; then
+        echo "==> cloning scummvm ($REF, SCUMMVM_REF override) into $SRC"
+        git clone --branch "$REF" --depth 1 https://github.com/scummvm/scummvm.git "$SRC"
+    else
+        echo "==> fetching scummvm at the pinned commit $PIN into $SRC"
+        git init -q "$SRC"
+        git -C "$SRC" remote add origin https://github.com/scummvm/scummvm.git
+        git -C "$SRC" fetch -q --depth 1 origin "$PIN"
+        git -C "$SRC" checkout -q FETCH_HEAD
+    fi
 fi
+echo "==> scummvm source: $(git -C "$SRC" rev-parse HEAD)"
 
 if [ "${1:-}" = "clean" ]; then
     make -C "$SRC" distclean || true

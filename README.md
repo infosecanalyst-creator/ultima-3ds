@@ -96,6 +96,7 @@ replaces it without rebuilding.
 
 ### On a Windows PC with devkitPro (the route used here)
 
+CI (and `build-3ds.sh`) builds the ScummVM commit pinned in `patches/scummvm-commit.txt`.
 `scummvm-src.tgz` is a trimmed ScummVM master checkout with the stereo patch
 already applied: Ultima engine + 3DS and SDL backends + the engine data it
 needs (~45 MB packed instead of 560 MB). In the devkitPro MSYS2 shell:
