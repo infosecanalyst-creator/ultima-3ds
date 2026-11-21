@@ -931,3 +931,14 @@ rw(AH,
    "\tif (remaining > (16u << 20)) remaining -= (4u << 20);\n",
    "ultima-3ds SV-04: wait for the last app's memory")
 print("done")
+
+# ------------------------------------ Ultima IV: Journey Onward from slot 0
+# Upstream asserts that the slot to load is not 0 ("assert(_saveSlotToLoad)"; it means "is
+# set", where -1 is "none"). EXIT GAME saves to the engine's autosave slot, which is slot 0,
+# and points last_save at it (SV-01), so Journey Onward after an exit save stopped ScummVM on
+# that assert (seen in the test emulator, Nov 21 2026: abort right after the tap).
+rw("engines/ultima/ultima4/ultima4.cpp",
+   "\tassert(_saveSlotToLoad);\n",
+   "\tassert(_saveSlotToLoad != -1); // ultima-3ds: slot 0 (the exit save) is a valid slot\n",
+   "ultima-3ds: slot 0 (the exit save) is a valid slot")
+print("done")

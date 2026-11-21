@@ -2,6 +2,7 @@
 
 ## 2026-11-21
 
+- Ultima IV: Journey Onward after EXIT GAME no longer stops ScummVM (the exit save is in slot 0, which the game refused to load).
 - The Choose a Game screen pages when you have more than five games (NEXT PAGE button, or L / R); the page keys no longer go into the wrong menu.
 - The Start menu works out once per opening whether EXIT GAME can save (before, it did the check on every redraw, which made the menu slow in a game).
 - The manual's page-number buffer is safe, and an unhandled-case warning is gone.
