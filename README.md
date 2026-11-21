@@ -74,7 +74,7 @@ screenshots; with `STEREO3DS_DUMP` set (it sets it) the depth hook in
 ## Controls and in-game manual (3DS port)
 
 The game fills the touch screen; the top screen is kept free. **Start opens
-a built-in manual** (text on top, section buttons on the touch screen; the
+a menu with a built-in manual** (text on top, section buttons on the touch screen; the
 game waits). Its text is `docs/manual.txt`, compiled into
 `backends/platform/3ds/manual_text.h`; a `manual.txt` in `sdmc:/3ds/scummvm/`
 replaces it without rebuilding.
@@ -88,9 +88,9 @@ replaces it without rebuilding.
 | ZL | swap the screens (game on top / on the touch screen) |
 | ZR | U4 enter, U6 use |
 | Select | attack |
-| L | ScummVM menu (save, load, quit) — moved here from Start |
-| R | drag / hover touch mode |
-| Start | instruction manual |
+| L | ScummVM menu (save, load, quit); on the Choose a Game screen, previous page |
+| R | drag / hover touch mode; on the Choose a Game screen, next page |
+| Start | menu: Resume, Manual, Save / Load / Options, Exit Game (asks first; saves to the autosave slot first where it can) |
 
 ## Build
 
@@ -129,7 +129,7 @@ start) and builds `out/3ds/scummvm.3dsx`.
 Copy `scummvm.3dsx` directly to `sdmc:/3ds/` (as `sdmc:/3ds/scummvm.3dsx`; saves and
 settings stay in `sdmc:/3ds/scummvm/`). Put the GOG/Steam `ULTIMA4` and
 `ULTIMA6` folders anywhere on the card and add them from the ScummVM launcher
-like any other game. The 3D slider controls the depth strength.
+like any other game. The 3D slider controls the depth strength. EXIT GAME and HOME > Close save to the autosave slot first (Journey Onward then finds it); if that save fails EXIT GAME asks "Exit anyway?". An empty `sdmc:/3ds/scummvm/debug.txt` writes timing lines to `debug.log` there.
 
 ## What to expect on first boot
 

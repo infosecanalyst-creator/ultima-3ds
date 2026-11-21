@@ -58,7 +58,7 @@ Start, Manual, then the "Left hand" button at the bottom of the touch screen, sw
 
 # Launcher and saving
 ## Starting a game
-1. The Choose a Game screen opens first: tap a game, or pick it with the D-pad and A. The last game you played has the gold frame.
+1. The Choose a Game screen opens first: tap a game, or pick it with the D-pad and A. The last game you played has the gold frame. It shows five games at a time. With more, a NEXT PAGE button (showing the page, for example 1/2) appears; tap it, or press L or R, to turn the page.
 2. To add a game, tap ScummVM Launcher, then Add Game, and pick the ULTIMA4 or ULTIMA6 folder on the SD card.
 3. In the ScummVM launcher, Game Opts changes settings for one game.
 
@@ -69,7 +69,12 @@ Start, Manual, then the "Left hand" button at the bottom of the touch screen, sw
 - Return to Launcher, or Quit.
 
 ## Saves and settings
-Saves and the settings file live in sdmc:/3ds/scummvm/ on the SD card.
+Saves and the settings file live in sdmc:/3ds/scummvm/ on the SD card. The program is sdmc:/3ds/scummvm.3dsx, directly in /3ds.
+
+## Leaving the game
+EXIT GAME in the Start menu asks first. In a game it saves to the game's autosave slot first when the game can be saved right then ("It is saved to its autosave slot first."), and points Journey Onward at that save, so the next time you choose Journey Onward (Ultima IV) or Continue it picks up where you left off. Where it cannot save, the menu says "Anything you have not saved is lost." The menu checks this once each time it opens.
+
+If the save fails (SD card full?) the menu shows "Not saved!" and asks "Exit anyway?"; it never quits after a failed save without asking. Closing the game from the HOME menu (HOME, then Close) makes the same autosave first, but nobody can be asked then, so a failed save is only logged.
 
 # Talking and typing
 While you talk, the touch screen shows the words to say as buttons:
@@ -182,3 +187,4 @@ Y (Escape) opens Ultima VI's own menu: save, load, settings. The ScummVM menu (L
 - Buttons do the wrong thing: in Options, Keymaps, reset the Ultima keymaps to their defaults.
 - No depth: push the 3D slider up; menus are flat on purpose.
 - Replace this manual: put your own manual.txt in sdmc:/3ds/scummvm/.
+- A log for bug reports: create an empty file named debug.txt in sdmc:/3ds/scummvm/ and start the game again; timing lines go to debug.log there. Delete debug.txt afterwards.
