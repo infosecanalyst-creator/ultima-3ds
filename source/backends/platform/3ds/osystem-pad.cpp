@@ -406,6 +406,20 @@ static bool exitAutosaveOk() {
 // SV-02: set when EXIT GAME's save failed; the menu then reopens on "Not saved!".
 static bool s_exitSaveFailed = false;
 
+// debug.txt (sdmc:/3ds/scummvm/debug.txt, checked once): each START-menu redraw's time goes
+// to sdmc:/3ds/scummvm/debug.log ("frame: port menu redraw N ms, exit-save checks M").
+static int s_dbg = -1;
+static unsigned s_dbgChecks = 0;
+static void portMenuDebugLine(u64 ms) {
+	if (s_dbg < 0) { FILE *d = fopen("sdmc:/3ds/scummvm/debug.txt", "r"); s_dbg = d != nullptr; if (d) fclose(d); }
+	if (!s_dbg) return;
+	if (FILE *f = fopen("sdmc:/3ds/scummvm/debug.log", "a")) {
+		fprintf(f, "frame: port menu redraw %llu ms, exit-save checks %u\n", (unsigned long long)ms, s_dbgChecks);
+		fclose(f);
+	}
+	s_dbgChecks = 0;
+}
+
 void OSystem_3DS::runPortMenu() {
 	static Sprite *top = nullptr, *bot = nullptr;
 	static uint8_t topPx[400 * 240 * 3], botPx[320 * 240 * 3];
@@ -441,6 +455,11 @@ void OSystem_3DS::runPortMenu() {
 
 	int focus = failPage ? 1 : 0, pressed = -1, chosen = -1;
 	bool confirm = failPage, redraw = true;
+	// SV-05: whether EXIT GAME can save reads the autosave slot's file (querySaveMetaInfos); the
+	// confirm page asked twice per redraw. Nothing changes while the menu is open (the game is
+	// paused), so it is asked once per opening.
+	int exitOk = -1;
+	auto exitOkCached = [&]() { if (exitOk < 0) { exitOk = exitAutosaveOk() ? 1 : 0; ++s_dbgChecks; } return exitOk == 1; };
 	std::vector<PadUI::Button> btns;
 	// full-width buttons filling the touch screen below the header (rule 11)
 	auto layout = [&]() {
@@ -496,6 +515,7 @@ void OSystem_3DS::runPortMenu() {
 		}
 		if (!redraw) { gspWaitForVBlank(); continue; }
 		redraw = false;
+		const u64 redrawStart = osGetTime();
 		{
 			const size_t before = btns.size();
 			const bool wasConfirm = btns.size() == 2 && (btns[0].label == "YES, EXIT" || btns[0].label == "EXIT ANYWAY");
@@ -509,7 +529,7 @@ void OSystem_3DS::runPortMenu() {
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
 		PadUI::drawHeader(tc, "ULTIMA IV AND VI", "PAUSED");
 		PadUI::drawText(tc, 8, 40, failPage ? "Not saved!" : confirm ? "Exit the game?" : "The game is paused.", PadUI::kWhite);
-		PadUI::drawText(tc, 8, 62, failPage ? "The save failed (SD card full?). Exit anyway?" : confirm ? (exitAutosaveOk() ? "It is saved to its autosave slot first." : "Anything you have not saved is lost.")
+		PadUI::drawText(tc, 8, 62, failPage ? "The save failed (SD card full?). Exit anyway?" : confirm ? (exitOkCached() ? "It is saved to its autosave slot first." : "Anything you have not saved is lost.")
 		                                   : "Choose on the touch screen, or with", PadUI::kGrey, false);
 		if (!confirm) PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
 		if (!confirm && !failPage) PadUI::drawText(tc, 8, 200, "Build " PORT_VERSION, PadUI::kGrey, false);   // git describe of ultima-3ds
@@ -522,7 +542,7 @@ void OSystem_3DS::runPortMenu() {
 			PadUI::drawText(bc, 8, 62, "Progress since the last save is lost.", PadUI::kGrey, false);
 		} else if (confirm) {
 			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
-			PadUI::drawText(bc, 8, 62, exitAutosaveOk()
+			PadUI::drawText(bc, 8, 62, exitOkCached()
 				? "The game is saved to its autosave first." : "Unsaved progress is lost.", PadUI::kGrey, false);
 		}
 		for (int i = 0; i < nb; ++i) {
@@ -558,6 +578,7 @@ void OSystem_3DS::runPortMenu() {
 			C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _modelviewLocation, bot->getMatrix());
 			bot->render();
 		C3D_FrameEnd(0);
+		portMenuDebugLine(osGetTime() - redrawStart);   // debug.txt only
 	}
 	// wait for the button / stylus that closed the menu to be let go
 	for (int i = 0; i < 100 && aptMainLoop(); ++i) {
