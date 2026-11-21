@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build a ScummVM 3DS binary with only the Ultima engine and the stereoscopic
-# depth patch applied. Produces out/3ds/scummvm/scummvm.3dsx (+ .cia if makerom
+# depth patch applied. Produces out/3ds/scummvm.3dsx (+ .cia if makerom
 # is on the PATH).
 #
 #   ./build-3ds.sh          # clone (first run), patch, build
@@ -53,11 +53,12 @@ if command -v makerom >/dev/null 2>&1; then
     make scummvm.cia || echo "cia build failed (bannertool/makerom?) -- the .3dsx is still fine"
 fi
 
-OUT="$HERE/out/3ds/scummvm"
+# the .3dsx lives directly in /3ds on the card (sdmc:/3ds/scummvm.3dsx); saves and settings in /3ds/scummvm/
+OUT="$HERE/out/3ds"
 mkdir -p "$OUT"
 cp scummvm.3dsx "$OUT/"
 [ -f scummvm.cia ] && cp scummvm.cia "$HERE/out/"
 echo
 echo "==> done: $OUT/scummvm.3dsx"
-echo "    copy out/3ds to the SD card root; put the Ultima IV / VI data folders anywhere on the card"
+echo "    copy it to sdmc:/3ds/scummvm.3dsx; put the Ultima IV / VI data folders anywhere on the card"
 echo "    and add them from the ScummVM launcher. 3D slider up = stereoscopic depth."

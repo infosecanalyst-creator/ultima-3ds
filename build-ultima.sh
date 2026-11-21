@@ -26,5 +26,5 @@ LOG=$PWD/ultima-build.log; : > "$LOG"
   make scummvm.3dsx
   echo "3dsx EXIT: $?"
   ls -la scummvm.3dsx
-  mkdir -p /c/devkitPro/3ds-projects/SD-CARD/3ds/scummvm && mv -f scummvm.3dsx /c/devkitPro/3ds-projects/SD-CARD/3ds/scummvm/ && echo "moved to SD-CARD/3ds/scummvm/"
+  mkdir -p /c/devkitPro/3ds-projects/SD-CARD/3ds && mv -f scummvm.3dsx /c/devkitPro/3ds-projects/SD-CARD/3ds/scummvm.3dsx && echo "moved to SD-CARD/3ds/scummvm.3dsx"
 } 2>&1 | tee -a "$LOG"

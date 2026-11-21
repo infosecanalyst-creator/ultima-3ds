@@ -107,7 +107,7 @@ bash /c/devkitPro/3ds-projects/ultima-3ds/build-ultima.sh
 It configures with `--host=3ds --disable-all-engines --enable-engine=ultima,ultima4,ultima6`
 (the sub-engines must be named explicitly, or ScummVM reports "game id not supported"),
 builds `scummvm.3dsx` (romfs holds the GUI themes and `ultima.dat`) and copies
-it to `SD-CARD/3ds/scummvm/`. Needs the portlibs `3ds-libpng 3ds-libjpeg-turbo
+it to `SD-CARD/3ds/scummvm.3dsx`. Needs the portlibs `3ds-libpng 3ds-libjpeg-turbo
 3ds-libmad 3ds-libogg 3ds-libvorbisidec 3ds-zlib`; FreeType is disabled on
 purpose (no `fonts.dat` needed, the built-in GUI font is used).
 
@@ -121,11 +121,12 @@ docker run --rm -v "${PWD}:/work" ultima-3ds ./build-3ds.sh
 
 First run clones ScummVM, applies the patch, configures for the 3DS with
 **only the Ultima engine** (static — no plugin loading, smaller, faster to
-start) and builds `out/3ds/scummvm/scummvm.3dsx`.
+start) and builds `out/3ds/scummvm.3dsx`.
 
 ### On the card
 
-Copy `scummvm.3dsx` to `sdmc:/3ds/scummvm/`. Put the GOG/Steam `ULTIMA4` and
+Copy `scummvm.3dsx` directly to `sdmc:/3ds/` (as `sdmc:/3ds/scummvm.3dsx`; saves and
+settings stay in `sdmc:/3ds/scummvm/`). Put the GOG/Steam `ULTIMA4` and
 `ULTIMA6` folders anywhere on the card and add them from the ScummVM launcher
 like any other game. The 3D slider controls the depth strength.
 
