@@ -830,6 +830,7 @@ print("done")
 # ScummVM with --selftest=<script>. The --wrap flags are added in build-3ds.sh.
 copy("backends/platform/3ds/selftest.cpp")
 copy("backends/platform/3ds/restartguard.c")
+copy("backends/platform/3ds/selftest_port.h")
 rw("backends/platform/3ds/module.mk",
    "\tosystem-pad.o\n",
    "\tosystem-pad.o \\\n\tselftest.o\n",
