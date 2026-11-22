@@ -73,7 +73,7 @@ There are three menus, and this is what each is for:
 While a ScummVM window (the slot list or its menu) is open it is on the touch screen, and the top screen says so. Tap its buttons with the stylus. B (or Y) closes it, one step at a time, and returns to the game.
 
 ## The title screens
-- Ultima IV: while the title plays, the touch screen has one button, "Continue to the menu". At the menu it has the menu's own five entries: Return to the View, Journey Onward, Initiate New Game, Configure, About. Journey Onward needs a saved game; without one the game says "Initiate a new game first!".
+- Ultima IV: while the title plays, the touch screen has one button, "Continue to the menu". At the menu it has the menu's own five entries: Return to the View, Journey Onward, Initiate New Game, Configure, About. Journey Onward needs a saved game; without one its button says "(no saved game yet)" and the game answers "Initiate a new game first!".
 - Ultima VI: the touch screen has the menu's entries (Introduction, Create Character, Transfer Character, Acknowledgments, Journey Onward) and "Skip the intro film". ENTER on the bottom row turns a page of the introduction.
 
 ## Saves and settings

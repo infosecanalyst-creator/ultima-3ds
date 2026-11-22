@@ -8,6 +8,8 @@
 - While a ScummVM window is open in a game, the top screen says what it is and how to get back.
 - Title screens: Ultima IV shows "Continue to the menu" during the title and the menu's own five entries at the menu; Ultima VI shows its five menu entries by name (no more "A" and "B") and "Skip the intro film".
 - Ultima VI: while the game's own menu is open the touch screen shows arrows, Enter and Cancel.
+- Ultima IV title: Journey Onward says "(no saved game yet)" on its button when there is nothing to continue.
+- ScummVM's windows are laid out for the touch screen (the save list was cut off at the right).
 - Left-hand mode now also applies in the START menu and on the Choose a Game screen, and the hints name the right buttons.
 - START menu footer has the same wording as the other ports; the exit question says its explanation once.
 - The top-screen hint strip (game on the touch screen) names the play buttons.

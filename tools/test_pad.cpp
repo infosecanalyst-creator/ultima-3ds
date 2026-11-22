@@ -100,6 +100,7 @@ int main(int argc, char **argv) {
 	setPlace("Despise  level 8"); setInput(kUltima4, kCommand); page(dir, "u4_dungeon");
 	info.mapValid = false; setInput(kUltima4, kIntro, "t"); page(dir, "u4_intro");
 	setInput(kUltima4, kIntro, "m"); page(dir, "u4_intro_menu");
+	setInput(kUltima4, kIntro, "n"); page(dir, "u4_intro_menu_nosave");
 	setInput(kUltima4, kIntro, "a"); page(dir, "u4_intro_about");
 	setInput(kUltima6, kIntro); page(dir, "u6_intro");
 	setInput(kUltima4, kOther); page(dir, "u4_other");

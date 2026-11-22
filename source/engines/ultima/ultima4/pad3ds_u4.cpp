@@ -8,6 +8,7 @@
  * combat map, and dungeon levels that fill in as the party explores (saved
  * to u4automap.dat in the save folder).
  */
+#include "common/config-manager.h"
 #include "common/pad3ds.h"
 #include "common/savefile.h"
 #include "common/system.h"
@@ -345,7 +346,9 @@ void pad3dsUpdate() {
 		// SCUMMVM-U4: which part of the title is up: "t" titles / map animation (any key goes
 		// on), "m" the menu (its five entries), "a" the About page
 		const int im = ic->pad3dsIntroMode();
-		choices = im == 2 ? "m" : im == 3 ? "a" : "t";
+		// SCUMMVM-X3: "n" = the menu, and there is no saved game for Journey Onward yet (the
+		// game checks the same setting: last_save)
+		choices = im == 2 ? (ConfMan.hasKey("last_save") && ConfMan.getInt("last_save") != -1 ? "m" : "n") : im == 3 ? "a" : "t";
 	}
 	setInput(kUltima4, input, choices.c_str());
 	setTalk(s_conv != nullptr, s_conv ? (int)s_conv->_state : -1);

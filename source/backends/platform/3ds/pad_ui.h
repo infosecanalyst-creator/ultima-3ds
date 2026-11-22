@@ -284,9 +284,11 @@ inline void build(State &st) {
 			       { "Transfer Character", key('t') }, { "Acknowledgments", key('a') },
 			       { "Journey Onward", key('j') }, { "Skip the intro film", named(kEscape) } };
 			grid(b, kFullX, kTopY, kFullW, kTopH, 1, it);   // full width, down to the strip
-		} else if (in.choices[0] == 'm') {
-			// SCUMMVM-U4: the title menu's entries in the game's own order and words, full width
-			it = { { "Return to the View", key('r') }, { "Journey Onward", key('j') },
+		} else if (in.choices[0] == 'm' || in.choices[0] == 'n') {
+			// SCUMMVM-U4: the title menu's entries in the game's own order and words, full width.
+			// SCUMMVM-X3: without a saved game Journey Onward says so on the button.
+			it = { { "Return to the View", key('r') },
+			       { in.choices[0] == 'n' ? "Journey Onward (no saved game yet)" : "Journey Onward", key('j') },
 			       { "Initiate New Game", key('i') }, { "Configure", key('c') }, { "About", key('a') } };
 			grid(b, kFullX, kTopY, kFullW, kTopH, 1, it);
 		} else {
