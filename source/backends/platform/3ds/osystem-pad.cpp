@@ -76,7 +76,15 @@ static int wantedMode(OSystem_3DS *osys, bool overlayVisible) {
 	return s_swapped ? 2 : 1;
 }
 
+static unsigned s_dbgPump = 0, s_dbgLayout = 0; static uint32 s_dbgNext = 0;
+static void dbgBeat(OSystem_3DS *o, bool ov, int mode) {
+	const uint32 now = o->getMillis();
+	if (now < s_dbgNext) return;
+	s_dbgNext = now + 1000;
+	warning("F3DBG pump=%u layout=%u overlay=%d mode=%d engine=%d paused=%d manualOpen=%d", s_dbgPump, s_dbgLayout, (int)ov, mode, g_engine ? 1 : 0, g_engine ? (int)g_engine->isPaused() : -1, (int)o->manualOpen);
+}
 void OSystem_3DS::padUpdateLayout() {
+	++s_dbgLayout; dbgBeat(this, _overlayVisible, padMode);
 	if (!g_engine && Pad3DS::info.game) {    // back in the launcher: forget the last game
 		memset(&Pad3DS::info, 0, sizeof(Pad3DS::info));
 		s_pad = PadUI::State();
@@ -307,6 +315,7 @@ void OSystem_3DS::padPump() {
 		memcpy(taps, s_taps, sizeof(Tap) * n);
 		s_ntaps = 0;
 	}
+	++s_dbgPump; dbgBeat(this, _overlayVisible, padMode);
 	// ZL / START while the game has the keymapper off (Ultima VI intro, title
 	// menu, cutscenes, typing): the input thread only sets these flags.
 	if (padSwapRequest) {
@@ -596,6 +605,7 @@ void OSystem_3DS::runPortMenu() {
 	} else if (chosen == kSave && g_engine) {
 		Common::Event e;
 		e.type = Common::EVENT_MAINMENU;          // ScummVM's game menu: save, load, options
+		warning("F3DBG push MAINMENU");
 		pushPadEvent(e);
 	} else if (chosen == kExit) {
 		// Rule 17 (never lose progress): a game that can be saved now goes to its autosave

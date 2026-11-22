@@ -942,3 +942,20 @@ rw("engines/ultima/ultima4/ultima4.cpp",
    "\tassert(_saveSlotToLoad != -1); // ultima-3ds: slot 0 (the exit save) is a valid slot\n",
    "ultima-3ds: slot 0 (the exit save) is a valid slot")
 print("done")
+
+rw("engines/engine.cpp",
+   "void Engine::openMainMenuDialog() {\n",
+   "void Engine::openMainMenuDialog() {\n\twarning(\"F3DBG openMainMenuDialog\");\n",
+   "F3DBG openMainMenuDialog")
+rw("engines/engine.cpp",
+   "\tPauseToken pt = pauseEngine();\n\tint result = dialog.runModal();\n",
+   "\twarning(\"F3DBG runDialog pause\");\n\tPauseToken pt = pauseEngine();\n\twarning(\"F3DBG runDialog modal\");\n\tint result = dialog.runModal();\n\twarning(\"F3DBG runDialog done %d\", result);\n",
+   "F3DBG runDialog pause")
+rw("gui/gui-manager.cpp",
+   "\tif (!_stateIsSaved) {\n\t\tif (g_engine)\n\t\t\tg_engine->suspendHotspots();\n",
+   "\twarning(\"F3DBG runLoop enter\");\n\tif (!_stateIsSaved) {\n\t\tif (g_engine)\n\t\t\tg_engine->suspendHotspots();\n",
+   "F3DBG runLoop enter")
+rw("gui/gui-manager.cpp",
+   "\t\tactiveDialog->handleTickle();\n",
+   "\t\t{ static int n = 0; if (n < 5) warning(\"F3DBG runLoop iter %d\", n++); }\n\t\tactiveDialog->handleTickle();\n",
+   "F3DBG runLoop iter")
