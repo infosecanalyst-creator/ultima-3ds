@@ -997,3 +997,23 @@ rw("engines/ultima/ultima4/controllers/intro_controller.h",
    "\tint pad3dsIntroMode() const { return (int)_mode; } // ultima-3ds: 0 titles, 1 map, 2 menu, 3 about\n",
    "ultima-3ds: 0 titles, 1 map, 2 menu, 3 about")
 print("done")
+
+# ScummVM's windows are always shown on the configured screen (the pad layout only moves the
+# game to the top screen while no window is open). The GUI asks for the overlay size when a
+# dialog is created, which is before the layout switches back: it got 400 px (top screen) and
+# laid its windows out too wide for the 320 px touch screen (the save list's right edge and
+# its Choose button were cut off). The answer now follows the configured screen in pad layouts.
+rw("backends/platform/3ds/osystem-graphics.cpp",
+   "int16 OSystem_3DS::getOverlayWidth() const {\n"
+   "\treturn _screen == kScreenTop ? 400 : 320;\n",
+   "int16 OSystem_3DS::getOverlayWidth() const {\n"
+   "\tif (padMode) // ultima-3ds: windows open on the configured screen, not where the pad put the game\n"
+   "\t\treturn (Screen)ConfMan.getInt(\"3ds_screen\") == kScreenTop ? 400 : 320;\n"
+   "\treturn _screen == kScreenTop ? 400 : 320;\n",
+   "ultima-3ds: windows open on the configured screen, not where the pad put the game")
+rw("backends/platform/3ds/osystem-graphics.cpp",
+   "#include \"backends/platform/3ds/osystem.h\"\n",
+   "#include \"backends/platform/3ds/osystem.h\"\n"
+   "#include \"common/config-manager.h\" // ultima-3ds: getOverlayWidth\n",
+   "ultima-3ds: getOverlayWidth")
+print("done")
