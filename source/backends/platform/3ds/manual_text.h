@@ -3,7 +3,7 @@
 static const char *const kManualText = R"MANUAL(# Welcome
 Ultima IV: Quest of the Avatar and Ultima VI: The False Prophet, running in ScummVM on the New 3DS.
 
-Press Start at any time to open the menu (Resume, Manual, Save / Load / Options, Exit Game): on the Choose a Game screen, in the launcher, in a game or in a menu. The game waits underneath. Manual opens this manual.
+Press Start at any time to open the menu (Resume, Manual, Save Game, Load Game, Options, Exit Game): on the Choose a Game screen, in the launcher, in a game or in a menu. The game waits underneath. Manual opens this manual.
 
 ## Using this manual
 - Circle Pad or C-Stick up/down: scroll the text (hold to keep scrolling).
@@ -40,9 +40,9 @@ ScummVM's menus and the launcher always use the touch screen.
 | Y | Cancel / Escape
 | ZL | Swap the screens (game on top / on the touch screen)
 | ZR | U4: Enter. U6: Use
-| L | ScummVM menu: save, load, quit
+| L | ScummVM's own menu (the same as Options in the Start menu)
 | Select | Attack
-| Start | Menu: Resume, Manual, Save / Load / Options, Exit Game (asks first)
+| Start | Menu: Resume, Manual, Save Game, Load Game, Options, Exit Game (asks first)
 There is no mouse cursor on the top screen; Ultima VI's cursor appears when the game asks you to pick a target, and moves with the D-pad or arrow buttons.
 
 ## Game on the touch screen (SWAP)
@@ -56,7 +56,7 @@ There is no mouse cursor on the top screen; Ultima VI's cursor appears when the 
 With the game on the touch screen (ZL): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.
 
 ## Left-handed play
-Start, Manual, then the "Left hand" button at the bottom of the touch screen, swaps the D-pad with the face buttons: Y/Up, A/Right, B/Down, X/Left. It is saved and applies everywhere, including this manual.
+Start, Manual, then the "Left hand" button at the bottom of the touch screen, swaps the D-pad with the face buttons: Y/Up, A/Right, B/Down, X/Left. It is saved and applies everywhere: in the games, in this manual, in the Start menu and on the Choose a Game screen. The hints on screen then name the buttons you really press.
 
 # Launcher and saving
 ## Starting a game
@@ -64,17 +64,23 @@ Start, Manual, then the "Left hand" button at the bottom of the touch screen, sw
 2. To add a game, tap ScummVM Launcher, then Add Game, and pick the ULTIMA4 or ULTIMA6 folder on the SD card.
 3. In the ScummVM launcher, Game Opts changes settings for one game.
 
-## The ScummVM menu (L)
-- Resume: back to the game.
-- Save / Load: pick a slot.
-- Options: sound volume and controls.
-- Return to Launcher, or Quit.
+## Saving and loading (Start menu)
+There are three menus, and this is what each is for:
+- The Start menu is the one to use. SAVE GAME opens the list of slots: pick one and it is saved. LOAD GAME opens the same list to load one. A greyed entry says why: "START A GAME FIRST" on the Choose a Game screen, "NOT RIGHT NOW" where the game cannot save or load (the Ultima IV title screen, for example; use Journey Onward there).
+- OPTIONS opens ScummVM's own menu (sound volume, controls, Return to Launcher). L opens it too.
+- Each game also has its own way: Q in Ultima IV, and Ultima VI's game menu (Y). They work, but Quit in Ultima VI's own menu leaves without the exit save; use EXIT GAME in the Start menu instead.
+
+While a ScummVM window (the slot list or its menu) is open it is on the touch screen, and the top screen says so. Tap its buttons with the stylus. B (or Y) closes it, one step at a time, and returns to the game.
+
+## The title screens
+- Ultima IV: while the title plays, the touch screen has one button, "Continue to the menu". At the menu it has the menu's own five entries: Return to the View, Journey Onward, Initiate New Game, Configure, About. Journey Onward needs a saved game; without one the game says "Initiate a new game first!".
+- Ultima VI: the touch screen has the menu's entries (Introduction, Create Character, Transfer Character, Acknowledgments, Journey Onward) and "Skip the intro film". ENTER on the bottom row turns a page of the introduction.
 
 ## Saves and settings
 Saves and the settings file live in sdmc:/3ds/scummvm/ on the SD card. The program is sdmc:/3ds/scummvm.3dsx, directly in /3ds.
 
 ## Leaving the game
-EXIT GAME in the Start menu asks first. In a game it saves to the game's autosave slot first when the game can be saved right then ("It is saved to its autosave slot first."), and points Journey Onward at that save, so the next time you choose Journey Onward (Ultima IV) or Continue it picks up where you left off. Where it cannot save, the menu says "Anything you have not saved is lost." The menu checks this once each time it opens.
+EXIT GAME in the Start menu asks first. In a game it saves to the game's autosave slot first when the game can be saved right then ("The game is saved first (its autosave slot)."), and points Journey Onward at that save, so the next time you choose Journey Onward (Ultima IV) or Continue it picks up where you left off. Where it cannot save, the menu says "Anything you have not saved is lost." The menu checks this once each time it opens.
 
 If the save fails (SD card full?) the menu shows "Not saved!" and asks "Exit anyway?"; it never quits after a failed save without asking. Closing the game from the HOME menu (HOME, then Close) makes the same autosave first, but nobody can be asked then, so a failed save is only logged.
 
@@ -149,7 +155,7 @@ Some people ask a question back: answer Y or N.
 - Lord British in Castle Britannia heals you and raises your level when you have earned it. Ask about HEALTH.
 - Moongates appear with the phases of the twin moons.
 - Running from battle costs Valor; so does attacking those who flee.
-- Save often with Q, or the ScummVM menu (L).
+- Save often with Q, or SAVE GAME in the Start menu.
 
 # Ultima VI: the quest
 The Avatar is called back to Britannia to find it at war with the gargoyles. Find out why, and set things right.
@@ -173,7 +179,7 @@ Tap Inventory (under the map). To drag items between hands, body and backpack, p
 Press X or Talk, pick the person with the D-pad and press A, then tap the words on the touch screen. NAME, JOB and BYE always work; the highlighted words they use appear as buttons.
 
 ## Game menu
-Y (Escape) opens Ultima VI's own menu: save, load, settings. The ScummVM menu (L) works too.
+Y (Escape) opens Ultima VI's own menu: save, load, settings. While it is open the touch screen shows arrows, Enter and Cancel to work it. SAVE GAME and LOAD GAME in the Start menu do the same job with bigger buttons.
 
 # Tips
 - Talk to everyone. Both games hide their quests in conversation.

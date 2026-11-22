@@ -21,6 +21,7 @@
 
 #include "backends/platform/3ds/osystem.h"
 #include "backends/platform/3ds/stereo3ds.h"
+#include "common/textconsole.h"
 
 namespace N3DS {
 
@@ -43,12 +44,15 @@ static void setLefty(bool on) {
 	g_lefty = on;
 	g_leftyLoaded = true;
 	if (on) {
-		if (FILE *f = fopen(kLeftyFile, "w"))
-			fclose(f);
+		FILE *f = fopen(kLeftyFile, "w");
+		if (!f || fclose(f) != 0)   // SCUMMVM-Q4: say so; the setting then only lasts until exit
+			warning("left-hand setting could not be written to %s", kLeftyFile);
 	} else {
 		remove(kLeftyFile);
 	}
 }
+
+bool ultimaLeftyOn() { return leftyOn(); }   // osystem-pad.cpp: hint strips name the right buttons
 
 u32 ultimaLefty(u32 m) {
 	static const u32 pr[4][2] = { { KEY_Y, KEY_DUP }, { KEY_A, KEY_DRIGHT },

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-11-22
+
+- Fixed: opening a ScummVM window (START > SAVE / LOAD / OPTIONS, or L) while the game was on the top screen stopped ScummVM with both screens frozen (seen on the Ultima IV title screen). The screens now switch to the normal layout before the window is sized.
+- START menu: SAVE GAME and LOAD GAME are their own entries and go straight to the slot list; OPTIONS opens ScummVM's menu. Entries that cannot be used are greyed with the reason.
+- B closes ScummVM's own windows (it was Y only).
+- While a ScummVM window is open in a game, the top screen says what it is and how to get back.
+- Title screens: Ultima IV shows "Continue to the menu" during the title and the menu's own five entries at the menu; Ultima VI shows its five menu entries by name (no more "A" and "B") and "Skip the intro film".
+- Ultima VI: while the game's own menu is open the touch screen shows arrows, Enter and Cancel.
+- Left-hand mode now also applies in the START menu and on the Choose a Game screen, and the hints name the right buttons.
+- START menu footer has the same wording as the other ports; the exit question says its explanation once.
+- The top-screen hint strip (game on the touch screen) names the play buttons.
+- Manual: the section being read has a 2 px gold ring.
+
 ## 2026-11-21
 
 - Ultima IV: Journey Onward after EXIT GAME no longer stops ScummVM (the exit save is in slot 0, which the game refused to load).

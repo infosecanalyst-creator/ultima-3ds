@@ -340,8 +340,12 @@ void pad3dsUpdate() {
 		input = kCombat;
 	} else if (dynamic_cast<GameController *>(c)) {
 		input = kCommand;
-	} else if (dynamic_cast<IntroController *>(c)) {
+	} else if (IntroController *ic = dynamic_cast<IntroController *>(c)) {
 		input = kIntro;
+		// SCUMMVM-U4: which part of the title is up: "t" titles / map animation (any key goes
+		// on), "m" the menu (its five entries), "a" the About page
+		const int im = ic->pad3dsIntroMode();
+		choices = im == 2 ? "m" : im == 3 ? "a" : "t";
 	}
 	setInput(kUltima4, input, choices.c_str());
 	setTalk(s_conv != nullptr, s_conv ? (int)s_conv->_state : -1);

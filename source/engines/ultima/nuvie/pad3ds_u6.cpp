@@ -195,6 +195,14 @@ void pad3dsUpdate() {
 		return;
 	}
 	Events *ev = game->get_event();
+	if (ev->get_gamemenu_dialog()) {
+		// SCUMMVM-U5: the game's own menu (Save Game ... Quit) is open on the game screen: the
+		// pad shows what works it (up, down, Enter, Cancel), not Talk, Look, Get...
+		setInput(kUltima6, kOther);
+		setTalk(false, -1);
+		updateMap(game);
+		return;
+	}
 	Converse *conv = game->get_converse();
 	MsgScroll *scroll = game->get_scroll();
 	const bool talking = conv && conv->running();

@@ -942,3 +942,58 @@ rw("engines/ultima/ultima4/ultima4.cpp",
    "\tassert(_saveSlotToLoad != -1); // ultima-3ds: slot 0 (the exit save) is a valid slot\n",
    "ultima-3ds: slot 0 (the exit save) is a valid slot")
 print("done")
+
+# ------------------------------------------- ScummVM's own menu while the pad shows (SCUMMVM-Q1)
+# With the game on the top screen (the pad layout) the overlay was sized for the top screen
+# (400 px) the moment a ScummVM dialog opened, while the GUI's own buffers were made for the
+# touch screen (320 px): grabOverlay()'s assert stopped ScummVM with both screens frozen (seen
+# in the test emulator on the Ultima IV title: START > SAVE / LOAD / OPTIONS; traced Nov 22
+# 2026). The layout now goes back to the normal one (overlay on its configured screen) before
+# the overlay is sized.
+rw("backends/platform/3ds/osystem-graphics.cpp",
+   "void OSystem_3DS::showOverlay(bool inGUI) {\n"
+   "\t_overlayInGUI = inGUI;\n"
+   "\t_overlayVisible = true;\n"
+   "\tupdateSize();\n",
+   "void OSystem_3DS::showOverlay(bool inGUI) {\n"
+   "\t_overlayInGUI = inGUI;\n"
+   "\t_overlayVisible = true;\n"
+   "\tpadUpdateLayout(); // ultima-3ds SCUMMVM-Q1: leave the pad layout before the overlay is sized\n"
+   "\tupdateSize();\n",
+   "ultima-3ds SCUMMVM-Q1: leave the pad layout before the overlay is sized")
+
+# B closes ScummVM's own dialogs too (it was Y only), so there is always a way back.
+rw("gui/gui-manager.cpp",
+   "\tact->addDefaultInputMapping(\"ESCAPE\");\n"
+   "\tact->addDefaultInputMapping(\"JOY_Y\");\n",
+   "\tact->addDefaultInputMapping(\"ESCAPE\");\n"
+   "\tact->addDefaultInputMapping(\"JOY_Y\");\n"
+   "\tact->addDefaultInputMapping(\"JOY_B\"); // ultima-3ds: B closes, as in every port menu\n",
+   "ultima-3ds: B closes, as in every port menu")
+
+# START > SAVE GAME / LOAD GAME go straight to ScummVM's slot list (SCUMMVM-X1). They run where
+# the ScummVM menu itself runs (the event manager, after an EVENT_MAINMENU), not inside the
+# port menu: g_n3dsMenuRequest says which one (0 the menu, 1 save, 2 load).
+rw("backends/events/default/default-events.cpp",
+   "\t\tif (g_engine && !g_engine->isPaused())\n"
+   "\t\t\tg_engine->openMainMenuDialog();\n",
+   "\t\tif (g_engine && !g_engine->isPaused()) {\n"
+   "\t\t\textern int g_n3dsMenuRequest; // ultima-3ds SCUMMVM-X1 (common/pad3ds.cpp)\n"
+   "\t\t\tconst int n3dsReq = g_n3dsMenuRequest;\n"
+   "\t\t\tg_n3dsMenuRequest = 0;\n"
+   "\t\t\tif (n3dsReq == 1)\n"
+   "\t\t\t\tg_engine->saveGameDialog();\n"
+   "\t\t\telse if (n3dsReq == 2)\n"
+   "\t\t\t\tg_engine->loadGameDialog();\n"
+   "\t\t\telse\n"
+   "\t\t\t\tg_engine->openMainMenuDialog();\n"
+   "\t\t}\n",
+   "ultima-3ds SCUMMVM-X1 (common/pad3ds.cpp)")
+
+# Ultima IV title: which part of the intro is showing, for the pad (SCUMMVM-U4)
+rw("engines/ultima/ultima4/controllers/intro_controller.h",
+   "\tbool hasInitiatedNewGame();\n",
+   "\tbool hasInitiatedNewGame();\n"
+   "\tint pad3dsIntroMode() const { return (int)_mode; } // ultima-3ds: 0 titles, 1 map, 2 menu, 3 about\n",
+   "ultima-3ds: 0 titles, 1 map, 2 menu, 3 about")
+print("done")

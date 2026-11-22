@@ -29,7 +29,12 @@
 #define PORT_VERSION "unknown"
 #endif
 
+extern int g_n3dsMenuRequest;   // common/pad3ds.cpp: what the next EVENT_MAINMENU opens
+
 namespace N3DS {
+
+bool ultimaLeftyOn();   // osystem-manual.cpp
+u32 ultimaLefty(u32 m);
 
 // 16-bit (RGB565): half the linear memory of RGBA8, which the 3D layers need.
 static const GfxMode3DS kPadMode = { Graphics::PixelFormat(2, 5, 6, 5, 0, 11, 5, 0, 0), GPU_RGB565,
@@ -142,11 +147,14 @@ void OSystem_3DS::padPrepare() {
 		PadUI::draw(cv, s_pad, now);
 		canvasToSprite(cv, s_bottomSprite);
 	}
-	if (card && (!s_cardShown || s_topDirty)) {
+	static bool s_cardInGame = false;
+	PadUI::leftHand() = ultimaLeftyOn();
+	if (card && (!s_cardShown || s_topDirty || s_cardInGame != (g_engine != nullptr))) {
 		s_topDirty = false;
 		s_cardShown = true;
+		s_cardInGame = g_engine != nullptr;
 		PadUI::Canvas cv = { 400, 240, s_topPx };
-		PadUI::drawLauncherCard(cv);
+		PadUI::drawLauncherCard(cv, s_cardInGame);   // SCUMMVM-U2: in a game it explains the ScummVM window
 		canvasToSprite(cv, s_topSprite);
 	}
 	if (!card) s_cardShown = false;
@@ -434,16 +442,32 @@ void OSystem_3DS::runPortMenu() {
 		bot->setFilteringMode(false);
 	}
 	const bool inGame = g_engine != nullptr;
-	enum { kResume, kManual, kSave, kExit, kExitNoSave };
+	enum { kResume, kManual, kSave, kLoad, kOptions, kExit, kExitNoSave };
+	const bool lefty = ultimaLeftyOn();           // SCUMMVM-Q3: the menu follows left-hand mode
 	const bool failPage = s_exitSaveFailed;       // SV-02: reopened after a failed exit save
 	s_exitSaveFailed = false;
 	struct Item { const char *label; int act; };
 	std::vector<Item> items;
+	// SCUMMVM-X1: SAVE GAME and LOAD GAME are plain entries that go straight to the slot list;
+	// OPTIONS is ScummVM's own menu. Each is greyed, with the reason, when it cannot be used
+	// (SCUMMVM-Q1: at the Ultima IV title nothing can be saved or loaded).
+	const bool canSave = inGame && g_engine->canSaveGameStateCurrently();
+	const bool canLoad = inGame && g_engine->canLoadGameStateCurrently();
 	items.push_back({ "RESUME", kResume });
 	items.push_back({ "MANUAL", kManual });
-	items.push_back({ inGame ? "SAVE / LOAD / OPTIONS" : "SAVE / LOAD: START A GAME FIRST", kSave });
+	items.push_back({ canSave ? "SAVE GAME" : inGame ? "SAVE GAME: NOT RIGHT NOW" : "SAVE GAME: START A GAME FIRST", kSave });
+	items.push_back({ canLoad ? "LOAD GAME" : inGame ? "LOAD GAME: NOT RIGHT NOW" : "LOAD GAME: START A GAME FIRST", kLoad });
+	items.push_back({ inGame ? "OPTIONS (SCUMMVM MENU)" : "OPTIONS: START A GAME FIRST", kOptions });
 	// house rule: a button that can't be used stays, greyed out and inert
-	auto usable = [&](int i, bool conf) { return conf || items[i].act != kSave || inGame; };
+	auto usable = [&](int i, bool conf) {
+		if (conf) return true;
+		switch (items[i].act) {
+		case kSave: return canSave;
+		case kLoad: return canLoad;
+		case kOptions: return inGame;
+		default: return true;
+		}
+	};
 	items.push_back({ "EXIT GAME", kExit });
 
 	manualOpen = true;
@@ -476,7 +500,7 @@ void OSystem_3DS::runPortMenu() {
 	while (aptMainLoop() && !exiting && chosen < 0) {
 		if (sleeping) { delayMillis(50); redraw = true; continue; }
 		hidScanInput();
-		const u32 down = hidKeysDown(), rep = hidKeysDownRepeat();
+		const u32 down = ultimaLefty(hidKeysDown()) | (hidKeysDown() & KEY_TOUCH), rep = ultimaLefty(hidKeysDownRepeat());
 		layout();
 		const int n = (int)btns.size();
 		if (focus >= n) focus = n - 1;
@@ -529,11 +553,13 @@ void OSystem_3DS::runPortMenu() {
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
 		PadUI::drawHeader(tc, "ULTIMA IV AND VI", "PAUSED");
 		PadUI::drawText(tc, 8, 40, failPage ? "Not saved!" : confirm ? "Exit the game?" : "The game is paused.", PadUI::kWhite);
-		PadUI::drawText(tc, 8, 62, failPage ? "The save failed (SD card full?). Exit anyway?" : confirm ? (exitOkCached() ? "It is saved to its autosave slot first." : "Anything you have not saved is lost.")
-		                                   : "Choose on the touch screen, or with", PadUI::kGrey, false);
-		if (!confirm) PadUI::drawText(tc, 8, 80, "the D-pad and A.", PadUI::kGrey, false);
+		// SCUMMVM-U3: the exit question's explanation is said once, on the touch screen next to
+		// the buttons; the top screen keeps the title and how to choose.
+		PadUI::drawText(tc, 8, 62, failPage ? "The save failed (SD card full?)." : "Choose on the touch screen, or with", PadUI::kGrey, false);
+		if (!failPage) PadUI::drawText(tc, 8, 80, lefty ? "A/B/X/Y and D-Right." : "the D-pad and A.", PadUI::kGrey, false);
 		if (!confirm && !failPage) PadUI::drawText(tc, 8, 200, "Build " PORT_VERSION, PadUI::kGrey, false);   // git describe of ultima-3ds
-		PadUI::drawHintStrip(tc, confirm ? "A choose    B no" : "A choose    B / START resume");
+		// SCUMMVM-U5 (U3-U5): the same footer wording as the other ports' START menus
+		PadUI::drawHintStrip(tc, lefty ? "A/B/X/Y: choose   D-Right: select   D-Down: back" : "D-Pad: choose   A: select   B: back");
 		PadUI::Canvas bc = { 320, 240, botPx };
 		bc.fill(0, 0, 320, 240, PadUI::kBg);
 		PadUI::drawHeader(bc, failPage ? "SAVE FAILED" : confirm ? "EXIT GAME" : "MENU");
@@ -543,7 +569,9 @@ void OSystem_3DS::runPortMenu() {
 		} else if (confirm) {
 			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
 			PadUI::drawText(bc, 8, 62, exitOkCached()
-				? "The game is saved to its autosave first." : "Unsaved progress is lost.", PadUI::kGrey, false);
+				? "The game is saved first (its autosave slot)." : "Anything you have not saved is lost.", PadUI::kGrey, false);
+			if (exitOkCached())
+				PadUI::drawText(bc, 8, 80, "Journey Onward continues from there.", PadUI::kGrey, false);
 		}
 		for (int i = 0; i < nb; ++i) {
 			if (!usable(i, confirm)) {        // greyed out: dim face, grey label
@@ -593,9 +621,12 @@ void OSystem_3DS::runPortMenu() {
 
 	if (chosen == kManual) {
 		runManual();
-	} else if (chosen == kSave && g_engine) {
+	} else if ((chosen == kSave || chosen == kLoad || chosen == kOptions) && g_engine) {
+		// The event manager opens it where ScummVM's own menu always opens (after the event
+		// is polled): the save list, the load list, or the menu itself (SCUMMVM-X1).
+		g_n3dsMenuRequest = chosen == kSave ? 1 : chosen == kLoad ? 2 : 0;
 		Common::Event e;
-		e.type = Common::EVENT_MAINMENU;          // ScummVM's game menu: save, load, options
+		e.type = Common::EVENT_MAINMENU;
 		pushPadEvent(e);
 	} else if (chosen == kExit) {
 		// Rule 17 (never lose progress): a game that can be saved now goes to its autosave
@@ -722,7 +753,8 @@ int OSystem_3DS::runGamePicker() {
 		if (sleeping) { delayMillis(50); redraw = true; continue; }
 		manualOpen = true;                  // the input thread leaves the keys to us
 		hidScanInput();
-		const u32 down = hidKeysDown(), rep = hidKeysDownRepeat();
+		// SCUMMVM-Q3: left-hand mode applies here too
+		const u32 down = ultimaLefty(hidKeysDown()) | (hidKeysDown() & KEY_TOUCH), rep = ultimaLefty(hidKeysDownRepeat());
 		int hitIdx = -1;
 		if (rep & (KEY_DUP | KEY_DLEFT)) { focus = (focus + n - 1) % n; redraw = true; }
 		if (rep & (KEY_DDOWN | KEY_DRIGHT)) { focus = (focus + 1) % n; redraw = true; }
@@ -766,11 +798,13 @@ int OSystem_3DS::runGamePicker() {
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
 		PadUI::drawHeader(tc, "ULTIMA IV AND VI");
 		PadUI::drawText(tc, 8, 40, "Choose a game.", PadUI::kWhite);
+		const bool lefty = ultimaLeftyOn();
 		PadUI::drawText(tc, 8, 62, "Tap it on the touch screen, or use", PadUI::kGrey, false);
-		PadUI::drawText(tc, 8, 80, pages > 1 ? "the D-pad and A. L/R turn the page." : "the D-pad and A.", PadUI::kGrey, false);
+		PadUI::drawText(tc, 8, 80, lefty ? (pages > 1 ? "A/B/X/Y and D-Right. L/R turn the page." : "A/B/X/Y and D-Right.")
+		                                 : (pages > 1 ? "the D-pad and A. L/R turn the page." : "the D-pad and A."), PadUI::kGrey, false);
 		PadUI::drawText(tc, 8, 110, "SCUMMVM LAUNCHER: add games, change", PadUI::kGrey, false);
 		PadUI::drawText(tc, 8, 128, "ScummVM's settings.", PadUI::kGrey, false);
-		PadUI::drawHintStrip(tc, "A start    START menu    ZL swap in a game");
+		PadUI::drawHintStrip(tc, lefty ? "D-Right start    START menu    ZL swap in a game" : "A start    START menu    ZL swap in a game");
 		PadUI::Canvas bc = { 320, 240, botPx };
 		bc.fill(0, 0, 320, 240, PadUI::kBg);
 		PadUI::drawHeader(bc, "CHOOSE A GAME");

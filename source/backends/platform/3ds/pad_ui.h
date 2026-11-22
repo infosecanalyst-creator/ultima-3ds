@@ -108,6 +108,10 @@ inline void drawText(Canvas &cv, int x, int y, const std::string &s, RGB c, bool
 	}
 }
 
+// Left-handed play (the backend sets it before drawing): hints then name the buttons the
+// player really presses (the D-pad and A/B/X/Y have swapped jobs).
+inline bool &leftHand() { static bool on = false; return on; }
+
 // Labels that did not fit (the test fails on any).
 inline std::vector<std::string> &cutLabels() { static std::vector<std::string> v; return v; }
 
@@ -273,15 +277,22 @@ inline void build(State &st) {
 		break;
 	case kIntro:
 		if (u6) {
-			it = { { "Journey Onward", key('j') }, { "Continue", named(kSpace) },
-			       { "Create a Character", key('c') }, { "Skip", named(kEscape) },
-			       { "Transfer a Character", key('t') }, { "A", key('a') },
-			       { "Introduction", key('i') }, { "B", key('b') } };
-			grid(b, kFullX, kTopY, kFullW, kTopH, 2, it);   // fill down to the strip
+			// SCUMMVM-U1 / X2: the menu's own five entries with their own words, in the menu's
+			// order (the old page had mystery buttons "A" and "B"); the last one skips the intro
+			// films. ENTER on the strip turns an intro page.
+			it = { { "Introduction", key('i') }, { "Create Character", key('c') },
+			       { "Transfer Character", key('t') }, { "Acknowledgments", key('a') },
+			       { "Journey Onward", key('j') }, { "Skip the intro film", named(kEscape) } };
+			grid(b, kFullX, kTopY, kFullW, kTopH, 1, it);   // full width, down to the strip
+		} else if (in.choices[0] == 'm') {
+			// SCUMMVM-U4: the title menu's entries in the game's own order and words, full width
+			it = { { "Return to the View", key('r') }, { "Journey Onward", key('j') },
+			       { "Initiate New Game", key('i') }, { "Configure", key('c') }, { "About", key('a') } };
+			grid(b, kFullX, kTopY, kFullW, kTopH, 1, it);
 		} else {
-			it = { { "Journey Onward", key('j') }, { "New Game", key('i') }, { "Return to View", key('r') },
-			       { "Configure", key('c') }, { "About", key('a') }, { "Continue", named(kSpace) } };
-			grid(b, 60, kTopY + 4, 200, 186, 1, it);
+			// the title animation, the map view or the About page: one key goes on to the menu
+			it = { { in.choices[0] == 'a' ? "Back to the menu" : "Continue to the menu", named(kSpace) } };
+			grid(b, kFullX, kTopY + 50, kFullW, 80, 1, it);
 		}
 		break;
 	case kPlayer:
@@ -472,8 +483,18 @@ inline void drawDashboard(Canvas &cv) {
 			"ZL: game back on top, buttons below",
 		};
 		drawHintStrip(cv, "ZL swap screens    START menu");
+		static const char *const linesLeft[] = {
+			"Tap the game to click where you tap.",
+			"",
+			"*BUTTONS",
+			"Circle Pad: move the mouse cursor",
+			"D-Right: left click     D-Down: right click",
+			"A/B/X/Y: walk",
+			"R: drag / hover touch mode",
+			"ZL: game back on top, buttons below",
+		};
 		for (int i = 0; i < 8; ++i) {
-			const char *t = lines[i];
+			const char *t = leftHand() ? linesLeft[i] : lines[i];
 			const bool head = t[0] == '*';
 			if (head) ++t;
 			if (textWidth(t) > cv.w - 16) cutLabels().push_back(t);
@@ -481,10 +502,16 @@ inline void drawDashboard(Canvas &cv) {
 		}
 		return;
 	}
+	// SCUMMVM-X4: the strip also names the buttons that act in the game (rule 15)
+	const char *const playHint = info.game == kUltima4
+		? (leftHand() ? "D-Left talk   ZR enter   SELECT attack   ZL swap   START menu"
+		              : "X talk   ZR enter   SELECT attack   ZL swap   START menu")
+		: (leftHand() ? "D-Left talk   ZR use   SELECT attack   ZL swap   START menu"
+		              : "X talk   ZR use   SELECT attack   ZL swap   START menu");
 	// Map between the header bar and the hint strip (y 28..220).
 	const int n = std::min(kMap * 3 / 2, 192), ox = 10, oy = 28;
 	drawHeader(cv, "ULTIMA", info.place);
-	drawHintStrip(cv, "ZL swap screens    START menu");
+	drawHintStrip(cv, playHint);
 	if (info.mapValid) {
 		cv.fill(ox - 2, oy - 2, n + 4, n + 4, kEdge);
 		for (int y = 0; y < n; ++y)
@@ -501,17 +528,55 @@ inline void drawDashboard(Canvas &cv) {
 	// The controls for the game on the touch screen, down to the hint strip (fill rule).
 	static const char *const hint[] = { "ZL: game back on", "top, buttons below", "", "Circle Pad: cursor", "A: left click",
 		"B: right click", "D-pad: walk", "R: drag / hover" };
+	static const char *const hintLeft[] = { "ZL: game back on", "top, buttons below", "", "Circle Pad: cursor", "D-Right: left click",
+		"D-Down: right click", "A/B/X/Y: walk", "R: drag / hover" };
 	for (int i = 0; i < 8; ++i) {
-		if ((int)strlen(hint[i]) > cols) cutLabels().push_back(hint[i]);
-		drawText(cv, rx, oy + 6 + i * 22, hint[i], i < 2 ? kWhite : kGrey, false);
+		const char *t = leftHand() ? hintLeft[i] : hint[i];
+		if ((int)strlen(t) > cols) cutLabels().push_back(t);
+		drawText(cv, rx, oy + 6 + i * 22, t, i < 2 ? kWhite : kGrey, false);
 	}
 }
 
 // Top screen while ScummVM's own screens (launcher, options, the game menu) are
 // on the touch screen: a short card instead of a dark screen (both screens
 // always in use).
-inline void drawLauncherCard(Canvas &cv) {
+inline void drawLauncherCard(Canvas &cv, bool inGame = false) {
 	cv.fill(0, 0, cv.w, cv.h, kBg);
+	if (inGame) {
+		// SCUMMVM-U2: a ScummVM window (save list, load list, its menu and options) is open over
+		// a running game: say what it is and how to get back, not how to add games.
+		drawHeader(cv, "SCUMMVM WINDOW", "GAME PAUSED");
+		drawHintStrip(cv, leftHand() ? "D-Down back to the game    START menu" : "B back to the game    START menu");
+		static const char *const gl[] = {
+			"A ScummVM window is open on the touch screen:",
+			"the list of saved games, or ScummVM's own menu",
+			"(save, load, options).",
+			"",
+			"*HOW TO USE IT",
+			"Tap its buttons with the stylus.",
+			"D-pad and A also work.",
+			"",
+			"*GOING BACK",
+			"B (or Y) closes the window, one step at a time,",
+			"and returns to the game.",
+		};
+		static const char *const glLeft[] = {
+			"Tap its buttons with the stylus.",
+			"A/B/X/Y and D-Right also work.",
+			"",
+			"*GOING BACK",
+			"D-Down (or D-Up) closes the window, one step",
+			"at a time, and returns to the game.",
+		};
+		for (int i = 0; i < 11; ++i) {
+			const char *t = (leftHand() && i >= 5) ? glLeft[i - 5] : gl[i];
+			const bool head = t[0] == '*';
+			if (head) ++t;
+			if (textWidth(t) > cv.w - 16) cutLabels().push_back(t);
+			drawText(cv, 8, 31 + i * 17, t, head ? kGold : kGrey, false);
+		}
+		return;
+	}
 	drawHeader(cv, "ULTIMA IV AND VI FOR NEW 3DS");
 	drawHintStrip(cv, "ZL swap screens    START menu");
 	static const char *const lines[] = {
@@ -522,10 +587,10 @@ inline void drawLauncherCard(Canvas &cv) {
 		"*IN A GAME",
 		"Circle Pad: walk     D-pad + A: touch buttons",
 		"X: talk     Y / B: cancel     Select: attack",
-		"ZR: U4 Enter, U6 Use     L: save, load, quit",
+		"ZR: U4 Enter, U6 Use     L: ScummVM's menu",
 		"ZL: swap the screens",
 		"",
-		"START: menu: manual, save, exit (works here too)",
+		"START: menu: manual, save, load, exit",
 	};
 	// 11 lines, 17 px apart: the card reaches the hint strip (fill rule).
 	for (int i = 0; i < 11; ++i) {

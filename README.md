@@ -88,9 +88,9 @@ replaces it without rebuilding.
 | ZL | swap the screens (game on top / on the touch screen) |
 | ZR | U4 enter, U6 use |
 | Select | attack |
-| L | ScummVM menu (save, load, quit); on the Choose a Game screen, previous page |
+| L | ScummVM's own menu (options); on the Choose a Game screen, previous page |
 | R | drag / hover touch mode; on the Choose a Game screen, next page |
-| Start | menu: Resume, Manual, Save / Load / Options, Exit Game (asks first; saves to the autosave slot first where it can) |
+| Start | menu: Resume, Manual, Save Game, Load Game, Options, Exit Game (asks first; saves to the autosave slot first where it can) |
 
 ## Build
 

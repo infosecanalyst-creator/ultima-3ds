@@ -16,6 +16,10 @@
 #endif
 #endif
 
+// START > SAVE GAME / LOAD GAME (osystem-pad.cpp) -> the event manager's EVENT_MAINMENU
+// (backends/events/default/default-events.cpp): 0 ScummVM's menu, 1 the save list, 2 the load list.
+int g_n3dsMenuRequest = 0;
+
 namespace Pad3DS {
 
 Info info;

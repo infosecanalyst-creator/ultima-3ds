@@ -477,8 +477,11 @@ public:
             }
             if (sel)
             {
-                fill(cv, b.x, b.y, b.w, 1, 250, 230, 120);
-                fill(cv, b.x, b.y + b.h - 1, b.w, 1, 250, 230, 120);
+                // the house focus ring: 2 px gold on all four sides (SCUMMVM-U6: two thin lines were weak)
+                fill(cv, b.x, b.y, b.w, 2, 255, 204, 64);
+                fill(cv, b.x, b.y + b.h - 2, b.w, 2, 255, 204, 64);
+                fill(cv, b.x, b.y, 2, b.h, 255, 204, 64);
+                fill(cv, b.x + b.w - 2, b.y, 2, b.h, 255, 204, 64);
             }
             const std::string &t = close ? std::string("Close") : tog ? m_toggle : m_sections[b.section].title;
             const int tw = std::min(ulen(t) * 6, b.w - 8);
