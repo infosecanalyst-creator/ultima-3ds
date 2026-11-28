@@ -53,6 +53,7 @@ static void setLefty(bool on) {
 }
 
 bool ultimaLeftyOn() { return leftyOn(); }   // osystem-pad.cpp: hint strips name the right buttons
+void ultimaLeftySet(bool on) { setLefty(on); }   // osystem-pad.cpp: the START menu's LEFT HAND row
 
 u32 ultimaLefty(u32 m) {
 	static const u32 pr[4][2] = { { KEY_Y, KEY_DUP }, { KEY_A, KEY_DRIGHT },

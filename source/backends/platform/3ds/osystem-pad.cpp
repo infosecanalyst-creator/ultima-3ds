@@ -34,6 +34,7 @@ extern int g_n3dsMenuRequest;   // common/pad3ds.cpp: what the next EVENT_MAINME
 namespace N3DS {
 
 bool ultimaLeftyOn();   // osystem-manual.cpp
+void ultimaLeftySet(bool on);
 u32 ultimaLefty(u32 m);
 
 // 16-bit (RGB565): half the linear memory of RGBA8, which the 3D layers need.
@@ -442,8 +443,8 @@ void OSystem_3DS::runPortMenu() {
 		bot->setFilteringMode(false);
 	}
 	const bool inGame = g_engine != nullptr;
-	enum { kResume, kManual, kSave, kLoad, kOptions, kExit, kExitNoSave };
-	const bool lefty = ultimaLeftyOn();           // SCUMMVM-Q3: the menu follows left-hand mode
+	enum { kResume, kManual, kSave, kLoad, kOptions, kLefty, kExit, kExitNoSave };
+	bool lefty = ultimaLeftyOn();                 // SCUMMVM-Q3: the menu follows left-hand mode
 	const bool failPage = s_exitSaveFailed;       // SV-02: reopened after a failed exit save
 	s_exitSaveFailed = false;
 	struct Item { const char *label; int act; };
@@ -468,7 +469,12 @@ void OSystem_3DS::runPortMenu() {
 		default: return true;
 		}
 	};
+	// cross-port pass: LEFT HAND in the START menu too (the same switch as the manual's)
+	items.push_back({ lefty ? "LEFT HAND: ON" : "LEFT HAND: OFF", kLefty });
 	items.push_back({ "EXIT GAME", kExit });
+	// house exit question: "Exit <game>?" (ScummVM runs Ultima IV or VI)
+	const Common::String gid = inGame ? ConfMan.get("gameid") : Common::String();
+	const char *exitQ = gid.hasPrefix("ultima4") ? "Exit Ultima IV?" : gid.hasPrefix("ultima6") ? "Exit Ultima VI?" : "Exit the game?";
 
 	manualOpen = true;
 	if (R_SUCCEEDED(gspLcdInit())) {
@@ -493,7 +499,7 @@ void OSystem_3DS::runPortMenu() {
 			for (int i = 0; i < n; ++i)
 				btns.push_back({ 6, y0 + i * (h + gap), 308, h, items[i].label, PadUI::Action(), false });
 		} else {
-			btns.push_back({ 6, 120, 150, 112, failPage ? "EXIT ANYWAY" : "YES, EXIT", PadUI::Action(), false });
+			btns.push_back({ 6, 120, 150, 112, failPage ? "EXIT ANYWAY" : "YES", PadUI::Action(), false });
 			btns.push_back({ 164, 120, 150, 112, "NO", PadUI::Action(), false });
 		}
 	};
@@ -526,6 +532,12 @@ void OSystem_3DS::runPortMenu() {
 			focus = hitIdx;
 			if (!confirm) {
 				if (items[hitIdx].act == kExit) { confirm = true; focus = 1; }
+				else if (items[hitIdx].act == kLefty) {   // flips at once; the menu stays open
+					lefty = !lefty;
+					ultimaLeftySet(lefty);
+					PadUI::leftHand() = lefty;
+					items[hitIdx].label = lefty ? "LEFT HAND: ON" : "LEFT HAND: OFF";
+				}
 				else chosen = items[hitIdx].act;
 			} else if (hitIdx == 0) {
 				chosen = failPage ? kExitNoSave : kExit;
@@ -542,7 +554,7 @@ void OSystem_3DS::runPortMenu() {
 		const u64 redrawStart = osGetTime();
 		{
 			const size_t before = btns.size();
-			const bool wasConfirm = btns.size() == 2 && (btns[0].label == "YES, EXIT" || btns[0].label == "EXIT ANYWAY");
+			const bool wasConfirm = btns.size() == 2 && (btns[0].label == "YES" || btns[0].label == "EXIT ANYWAY");
 			layout();                         // the press may have switched pages: draw the new one
 			if (wasConfirm != confirm || before != btns.size()) pressed = -1;
 		}
@@ -552,7 +564,7 @@ void OSystem_3DS::runPortMenu() {
 		PadUI::Canvas tc = { 400, 240, topPx };
 		tc.fill(0, 0, 400, 240, PadUI::kBg);
 		PadUI::drawHeader(tc, "ULTIMA IV AND VI", "PAUSED");
-		PadUI::drawText(tc, 8, 40, failPage ? "Not saved!" : confirm ? "Exit the game?" : "The game is paused.", PadUI::kWhite);
+		PadUI::drawText(tc, 8, 40, failPage ? "Not saved!" : confirm ? exitQ : "The game is paused.", PadUI::kWhite);
 		// SCUMMVM-U3: the exit question's explanation is said once, on the touch screen next to
 		// the buttons; the top screen keeps the title and how to choose.
 		PadUI::drawText(tc, 8, 62, failPage ? "The save failed (SD card full?)." : "Choose on the touch screen, or with", PadUI::kGrey, false);
@@ -567,11 +579,11 @@ void OSystem_3DS::runPortMenu() {
 			PadUI::drawText(bc, 8, 40, "Not saved! Exit anyway?", PadUI::kWhite);
 			PadUI::drawText(bc, 8, 62, "Progress since the last save is lost.", PadUI::kGrey, false);
 		} else if (confirm) {
-			PadUI::drawText(bc, 8, 40, "Exit the game?", PadUI::kWhite);
+			PadUI::drawText(bc, 8, 40, exitQ, PadUI::kWhite);
 			PadUI::drawText(bc, 8, 62, exitOkCached()
-				? "The game is saved first (its autosave slot)." : "Anything you have not saved is lost.", PadUI::kGrey, false);
-			if (exitOkCached())
-				PadUI::drawText(bc, 8, 80, "Journey Onward continues from there.", PadUI::kGrey, false);
+				? "It is saved first (its autosave slot)." : "Not saved here: progress since your", PadUI::kGrey, false);
+			PadUI::drawText(bc, 8, 80, exitOkCached()
+				? "Journey Onward continues from there." : "last save is lost.", PadUI::kGrey, false);
 		}
 		for (int i = 0; i < nb; ++i) {
 			if (!usable(i, confirm)) {        // greyed out: dim face, grey label

@@ -1,7 +1,7 @@
 # Welcome
 Ultima IV: Quest of the Avatar and Ultima VI: The False Prophet, running in ScummVM on the New 3DS.
 
-Press Start at any time to open the menu (Resume, Manual, Save Game, Load Game, Options, Exit Game): on the Choose a Game screen, in the launcher, in a game or in a menu. The game waits underneath. Manual opens this manual.
+Press Start at any time to open the menu (Resume, Manual, Save Game, Load Game, Options, Left Hand, Exit Game): on the Choose a Game screen, in the launcher, in a game or in a menu. The game waits underneath. Manual opens this manual.
 
 ## Using this manual
 - Circle Pad or C-Stick up/down: scroll the text (hold to keep scrolling).
@@ -40,7 +40,7 @@ ScummVM's menus and the launcher always use the touch screen.
 | ZR | U4: Enter. U6: Use
 | L | ScummVM's own menu (the same as Options in the Start menu)
 | Select | Attack
-| Start | Menu: Resume, Manual, Save Game, Load Game, Options, Exit Game (asks first)
+| Start | Menu: Resume, Manual, Save Game, Load Game, Options, Left Hand, Exit Game (asks first)
 There is no mouse cursor on the top screen; Ultima VI's cursor appears when the game asks you to pick a target, and moves with the D-pad or arrow buttons.
 
 ## Game on the touch screen (SWAP)
@@ -54,7 +54,7 @@ There is no mouse cursor on the top screen; Ultima VI's cursor appears when the 
 With the game on the touch screen (ZL): drag mode (the default) presses the mouse button while you touch; hover mode only moves the cursor and a quick tap clicks. R switches between them.
 
 ## Left-handed play
-Start, Manual, then the "Left hand" button at the bottom of the touch screen, swaps the D-pad with the face buttons: Y/Up, A/Right, B/Down, X/Left. It is saved and applies everywhere: in the games, in this manual, in the Start menu and on the Choose a Game screen. The hints on screen then name the buttons you really press.
+Start, Left Hand (or Start, Manual, then the "Left hand" button at the bottom of the touch screen) swaps the D-pad with the face buttons: Y/Up, A/Right, B/Down, X/Left. It is saved and applies everywhere: in the games, in this manual, in the Start menu and on the Choose a Game screen. The hints on screen then name the buttons you really press.
 
 # Launcher and saving
 ## Starting a game
@@ -78,7 +78,7 @@ While a ScummVM window (the slot list or its menu) is open it is on the touch sc
 Saves and the settings file live in sdmc:/3ds/scummvm/ on the SD card. The program is sdmc:/3ds/scummvm.3dsx, directly in /3ds.
 
 ## Leaving the game
-EXIT GAME in the Start menu asks first. In a game it saves to the game's autosave slot first when the game can be saved right then ("The game is saved first (its autosave slot)."), and points Journey Onward at that save, so the next time you choose Journey Onward (Ultima IV) or Continue it picks up where you left off. Where it cannot save, the menu says "Anything you have not saved is lost." The menu checks this once each time it opens.
+EXIT GAME in the Start menu asks first ("Exit Ultima IV?" or "Exit Ultima VI?"; NO is chosen, B goes back). In a game it saves to the game's autosave slot first when the game can be saved right then ("It is saved first (its autosave slot)."), and points Journey Onward at that save, so the next time you choose Journey Onward (Ultima IV) or Continue it picks up where you left off. Where it cannot save, the menu says "Not saved here: progress since your last save is lost." The menu checks this once each time it opens.
 
 If the save fails (SD card full?) the menu shows "Not saved!" and asks "Exit anyway?"; it never quits after a failed save without asking. Closing the game from the HOME menu (HOME, then Close) makes the same autosave first, but nobody can be asked then, so a failed save is only logged.
 
