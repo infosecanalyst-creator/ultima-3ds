@@ -580,10 +580,14 @@ void OSystem_3DS::runPortMenu() {
 			PadUI::drawText(bc, 8, 62, "Progress since the last save is lost.", PadUI::kGrey, false);
 		} else if (confirm) {
 			PadUI::drawText(bc, 8, 40, exitQ, PadUI::kWhite);
-			PadUI::drawText(bc, 8, 62, exitOkCached()
-				? "It is saved first (its autosave slot)." : "Not saved here: progress since your", PadUI::kGrey, false);
-			PadUI::drawText(bc, 8, 80, exitOkCached()
-				? "Journey Onward continues from there." : "last save is lost.", PadUI::kGrey, false);
+			if (!inGame)                      // Choose a Game screen: nothing is running
+				PadUI::drawText(bc, 8, 62, "No game is running: nothing to save.", PadUI::kGrey, false);
+			else {
+				PadUI::drawText(bc, 8, 62, exitOkCached()
+					? "It is saved first (its autosave slot)." : "Not saved here: progress since your", PadUI::kGrey, false);
+				PadUI::drawText(bc, 8, 80, exitOkCached()
+					? "Journey Onward continues from there." : "last save is lost.", PadUI::kGrey, false);
+			}
 		}
 		for (int i = 0; i < nb; ++i) {
 			if (!usable(i, confirm)) {        // greyed out: dim face, grey label

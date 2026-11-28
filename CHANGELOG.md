@@ -3,7 +3,7 @@
 ## 2026-11-27
 
 - Same as the other 3DS ports (cross-port pass): the START menu has a LEFT HAND row before EXIT GAME (the same switch as the manual's "Left hand"; it flips at once and the menu stays open).
-- The exit question names the game ("Exit Ultima IV?" or "Exit Ultima VI?"), and its buttons read YES / NO (was "YES, EXIT"). Second line: "It is saved first (its autosave slot)." or "Not saved here: progress since your last save is lost."
+- The exit question names the game ("Exit Ultima IV?" or "Exit Ultima VI?"), and its buttons read YES / NO (was "YES, EXIT"). Second line: "It is saved first (its autosave slot)." or "Not saved here: progress since your last save is lost." On the Choose a Game screen: "No game is running: nothing to save."
 
 ## 2026-11-22
 
